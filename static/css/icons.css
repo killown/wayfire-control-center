@@ -83,6 +83,21 @@
   min-width: 200px; /* Set a minimum width to avoid collapsing */
 }
 
+/* New option form styles */
+.add-option-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.add-option-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.add-option-form button {
+  margin-top: 0.5rem;
+}
+
 /* Scrollbar styling (Optional) */
 .input-group::-webkit-scrollbar {
   width: 8px;

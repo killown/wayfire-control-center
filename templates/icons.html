@@ -2,9 +2,16 @@
 <html lang="en">
   {% include 'icons-header.html' %}
   <!-- Include the icons-header.html file -->
-  <link rel="stylesheet" href="static/css/icons.css"> <!-- Include the icons.css file -->
   <body>
     <div class="container">
+      <div class="search-bar-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search..."
+          class="form-control"
+        />
+      </div>
       <div class="d-flex flex-wrap" id="sectionsContainer">
         {% for section in config.sections() %}
         <div class="section-card" data-section="{{ section }}">
@@ -45,6 +52,30 @@
                   </form>
                 </div>
                 {% endfor %}
+              </div>
+              <!-- Form to add a new option -->
+              <div class="add-option-form">
+                <form onsubmit="addNewOption(event, '{{ section }}')">
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      name="newOption"
+                      class="form-control"
+                      placeholder="New option name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      name="newValue"
+                      class="form-control"
+                      placeholder="New option value"
+                      required
+                    />
+                  </div>
+                  <button class="btn btn-success" type="submit">Add Option</button>
+                </form>
               </div>
             </div>
           </div>
