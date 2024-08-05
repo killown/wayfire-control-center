@@ -1,0 +1,74 @@
+{# This file contains icon classes for various sections #}
+{% macro get_icon_class(section) %}
+    {% if section.startswith('core') %} fa-cogs
+    {% elif section.startswith('output') %} fa-desktop
+    {% elif section.startswith('input') %} fa-keyboard
+    {% elif section.startswith('binding') %} fa-key
+    {% elif section.startswith('scale') %} fa-ruler
+    {% elif section.startswith('plugin') %} fa-plug
+    {% elif section.startswith('mouse') %} fa-mouse
+    {% elif section.startswith('touch') %} fa-touch
+    {% elif section.startswith('appearance') %} fa-paintbrush
+    {% elif section.startswith('startup') %} fa-play-circle
+    {% elif section.startswith('shortcuts') %} fa-keyboard
+    {% elif section.startswith('theme') %} fa-palette
+    {% elif section.startswith('layout') %} fa-th
+    {% elif section.startswith('window') %} fa-window-restore
+    {% elif section.startswith('workspace') %} fa-th-large
+    {% elif section.startswith('compiz') %} fa-cube
+    {% elif section.startswith('tiling') %} fa-th-large
+    {% elif section.startswith('expose') %} fa-expand
+    {% elif section.startswith('wobbly') %} fa-arrows-alt
+    {% elif section.startswith('zoom') %} fa-search-plus
+    {% elif section.startswith('fade') %} fa-tachometer-alt
+    {% elif section.startswith('shadow') %} fa-caret-square-right
+    {% elif section.startswith('simple-tile') %} fa-th-large
+    {% elif section.startswith('view-shot') %} fa-camera
+    {% elif section.startswith('workarounds') %} fa-tools
+    {% elif section.startswith('wsets') %} fa-th
+    {% elif section.startswith('vswitch') %} fa-exchange-alt
+    {% elif section.startswith('switcher') %} fa-window-restore
+    {% elif section.startswith('water') %} fa-tint
+    {% elif section.startswith('wm-actions') %} fa-tachometer-alt
+    {% elif section.startswith('winzoom') %} fa-search-plus
+    {% elif section.startswith('resize') %} fa-arrows-alt
+    {% elif section.startswith('preserve-output') %} fa-tv
+    {% elif section.startswith('vswipe') %} fa-arrows-alt
+    {% elif section.startswith('wayfire-shell') %} fa-terminal
+    {% elif section.startswith('wrot') %} fa-rotate
+    {% elif section.startswith('pixdecor') %} fa-paintbrush
+    {% elif section.startswith('obs') %} fa-video
+    {% elif section.startswith('oswitch') %} fa-sync
+    {% elif section.startswith('move') %} fa-arrows
+    {% elif section.startswith('mag') %} fa-search
+    {% elif section.startswith('keycolor') %} fa-palette
+    {% elif section.startswith('xdg-activation') %} fa-cogs
+    {% elif section.startswith('ipc') %} fa-plug
+    {% elif section.startswith('ipc-rules') %} fa-rules
+    {% elif section.startswith('join-views') %} fa-object-group
+    {% elif section.startswith('invert') %} fa-adjust
+    {% elif section.startswith('hinge') %} fa-hands
+    {% elif section.startswith('grid') %} fa-th
+    {% elif section.startswith('gtk-shell') %} fa-terminal
+    {% elif section.startswith('hide-cursor') %} fa-eye-slash
+    {% elif section.startswith('ghost') %} fa-ghost
+    {% elif section.startswith('foreign-toplevel') %} fa-external-link-alt
+    {% elif section.startswith('force-fullscreen') %} fa-expand-arrows-alt
+    {% elif section.startswith('showrepaint') %} fa-redo
+    {% elif section.startswith('idle') %} fa-pause
+    {% elif section.startswith('follow-focus') %} fa-crosshairs
+    {% elif section.startswith('focus-steal-prevent') %} fa-lock
+    {% elif section.startswith('focus-change') %} fa-bullseye
+    {% elif section.startswith('fast-switcher') %} fa-fast-forward
+    {% elif section.startswith('filters') %} fa-filter
+    {% elif section.startswith('fisheye') %} fa-eye
+    {% elif section.startswith('extra-gestures') %} fa-hand-paper
+    {% elif section.startswith('expo') %} fa-expand
+    {% elif section.startswith('decoration') %} fa-paint-brush
+    {% elif section.startswith('cube') %} fa-cube
+    {% elif section.startswith('crosshair') %} fa-crosshairs
+    {% elif section.startswith('command') %} fa-terminal
+    {% else %} fa-question
+    {% endif %}
+{% endmacro %}
+

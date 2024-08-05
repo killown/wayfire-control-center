@@ -1,2 +1,9 @@
-# wayfire-control-center
-wayfire-control-center
+## Wayfire Control Center
+
+# install
+
+pip install flask
+
+# run
+
+python app.py

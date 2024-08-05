@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayfire Configuration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group input[type="text"] {
+            margin-right: 10px;
+        }
+        .input-group .btn {
+            margin-left: 10px;
+        }
+        .form-inline .form-control {
+            margin-bottom: 10px; /* Space between inputs on new lines */
+        }
+        .form-inline .btn {
+            margin-left: 0; /* No left margin needed for the button */
+        }
+        .section-card {
+            margin-bottom: 20px;
+        }
+        #sectionsContainer {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .section-card {
+            flex: 1 0 48%; /* Two columns with some margin between them */
+            margin-right: 1%;
+        }
+        .section-card:nth-child(odd) {
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Wayfire Configuration</h1>
+        <div class="row" id="sectionsContainer">
+            {% for section in config.sections() %}
+                <div class="section-card" data-section="{{ section }}">
+                    <div class="card mb-4">
+                        <div class="card-header" data-toggle="collapse" data-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                            <i class="fas card-icon
+                                {% if section.startswith('core') %}
+                                    fa-cogs
+                                {% elif section.startswith('output') %}
+                                    fa-desktop
+                                {% elif section.startswith('input') %}
+                                    fa-keyboard
+                                {% elif section.startswith('binding') %}
+                                    fa-key
+                                {% elif section.startswith('scale') %}
+                                    fa-ruler
+                                {% elif section.startswith('plugin') %}
+                                    fa-plug
+                                {% elif section.startswith('mouse') %}
+                                    fa-mouse
+                                {% elif section.startswith('touch') %}
+                                    fa-touch
+                                {% elif section.startswith('appearance') %}
+                                    fa-paintbrush
+                                {% elif section.startswith('startup') %}
+                                    fa-play-circle
+                                {% elif section.startswith('shortcuts') %}
+                                    fa-keyboard
+                                {% elif section.startswith('theme') %}
+                                    fa-palette
+                                {% elif section.startswith('layout') %}
+                                    fa-th
+                                {% elif section.startswith('window') %}
+                                    fa-window-restore
+                                {% elif section.startswith('workspace') %}
+                                    fa-th-large
+                                {% elif section.startswith('expose') %}
+                                    fa-expand
+                                {% elif section.startswith('wobbly') %}
+                                    fa-arrows-alt
+                                {% elif section.startswith('zoom') %}
+                                    fa-search-plus
+                                {% elif section.startswith('fade') %}
+                                    fa-tachometer-alt
+                                {% elif section.startswith('shadow') %}
+                                    fa-caret-square-right
+                                {% elif section.startswith('simple-tile') %}
+                                    fa-th-large
+                                {% elif section.startswith('view-shot') %}
+                                    fa-camera
+                                {% elif section.startswith('workarounds') %}
+                                    fa-tools
+                                {% elif section.startswith('wsets') %}
+                                    fa-th
+                                {% elif section.startswith('vswitch') %}
+                                    fa-exchange-alt
+                                {% elif section.startswith('switcher') %}
+                                    fa-window-restore
+                                {% elif section.startswith('water') %}
+                                    fa-tint
+                                {% elif section.startswith('wm-actions') %}
+                                    fa-tachometer-alt
+                                {% elif section.startswith('winzoom') %}
+                                    fa-search-plus
+                                {% elif section.startswith('resize') %}
+                                    fa-arrows-alt
+                                {% elif section.startswith('preserve-output') %}
+                                    fa-tv
+                                {% elif section.startswith('vswipe') %}
+                                    fa-arrows-alt
+                                {% elif section.startswith('wayfire-shell') %}
+                                    fa-terminal
+                                {% elif section.startswith('wrot') %}
+                                    fa-rotate
+                                {% elif section.startswith('pixdecor') %}
+                                    fa-paintbrush
+                                {% elif section.startswith('obs') %}
+                                    fa-video
+                                {% elif section.startswith('oswitch') %}
+                                    fa-sync
+                                {% elif section.startswith('move') %}
+                                    fa-arrows
+                                {% elif section.startswith('mag') %}
+                                    fa-search
+                                {% elif section.startswith('keycolor') %}
+                                    fa-palette
+                                {% elif section.startswith('xdg-activation') %}
+                                    fa-cogs
+                                {% elif section.startswith('ipc') %}
+                                    fa-plug
+                                {% elif section.startswith('ipc-rules') %}
+                                    fa-rules
+                                {% elif section.startswith('join-views') %}
+                                    fa-object-group
+                                {% elif section.startswith('invert') %}
+                                    fa-adjust
+                                {% elif section.startswith('hinge') %}
+                                    fa-hands
+                                {% elif section.startswith('grid') %}
+                                    fa-th
+                                {% elif section.startswith('gtk-shell') %}
+                                    fa-terminal
+                                {% elif section.startswith('hide-cursor') %}
+                                    fa-eye-slash
+                                {% elif section.startswith('ghost') %}
+                                    fa-ghost
+                                {% elif section.startswith('foreign-toplevel') %}
+                                    fa-external-link-alt
+                                {% elif section.startswith('force-fullscreen') %}
+                                    fa-expand-arrows-alt
+                                {% elif section.startswith('showrepaint') %}
+                                    fa-redo
+                                {% elif section.startswith('idle') %}
+                                    fa-pause
+                                {% elif section.startswith('follow-focus') %}
+                                    fa-crosshairs
+                                {% elif section.startswith('focus-steal-prevent') %}
+                                    fa-lock
+                                {% elif section.startswith('focus-change') %}
+                                    fa-bullseye
+                                {% elif section.startswith('fast-switcher') %}
+                                    fa-fast-forward
+                                {% elif section.startswith('filters') %}
+                                    fa-filter
+                                {% elif section.startswith('fisheye') %}
+                                    fa-eye
+                                {% elif section.startswith('extra-gestures') %}
+                                    fa-hand-paper
+                                {% elif section.startswith('expo') %}
+                                    fa-expand
+                                {% elif section.startswith('decoration') %}
+                                    fa-paint-brush
+                                {% elif section.startswith('cube') %}
+                                    fa-cube
+                                {% elif section.startswith('crosshair') %}
+                                    fa-crosshairs
+                                {% elif section.startswith('command') %}
+                                    fa-terminal
+                                {% elif section.startswith('blur') %}
+                                    fa-tachometer-alt
+                                {% elif section.startswith('bench') %}
+                                    fa-tachometer-alt
+                                {% elif section.startswith('autostart') %}
+                                    fa-play
+                                {% elif section.startswith('background-view') %}
+                                    fa-image
+                                {% elif section.startswith('autorotate-iio') %}
+                                    fa-sync-alt
+                                {% elif section.startswith('alpha') %}
+                                    fa-adjust
+                                {% elif section.startswith('animate') %}
+                                    fa-animate
+                                {% elif section.startswith('annotate') %}
+                                    fa-pen
+                                {% elif section.startswith('session-lock') %}
+                                    fa-lock
+                                {% else %}
+                                    fa-folder
+                                {% endif %}"></i>
+                            <h5 class="mb-0">{{ section }}</h5>
+                        </div>
+                        <div id="collapse{{ loop.index }}" class="collapse">
+                            <div class="card-body">
+                                <div class="list-group">
+                                    {% for option, value in config.items(section) %}
+                                        <div class="list-group-item">
+                                            <strong>{{ option }}</strong>
+                                            <div class="input-group">
+                                                <form action="{{ url_for('update_option') }}" method="post" class="form-inline" onsubmit="event.stopPropagation();">
+                                                    <input type="hidden" name="section" value="{{ section }}">
+                                                    <input type="hidden" name="option" value="{{ option }}">
+                                                    <input type="text" name="value" class="form-control" value="{{ value }}" required>
+                                                </form>
+                                                <button type="button" class="btn btn-danger ml-2 delete-button" data-section="{{ section }}" data-option="{{ option }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <!-- Add New Option Form -->
+                                    <div class="list-group-item">
+                                        <form action="{{ url_for('add_option') }}" method="post" class="form-inline">
+                                            <input type="hidden" name="section" value="{{ section }}">
+                                            <div class="form-group">
+                                                <input type="text" name="option" class="form-control mb-2" placeholder="Option name" required>
+                                                <input type="text" name="value" class="form-control mb-2" placeholder="Value" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                const option = this.getAttribute('data-option');
+                
+                fetch('{{ url_for("delete_option") }}', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        section: section,
+                        option: option
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        this.closest('.list-group-item').remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
