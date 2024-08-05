@@ -1,46 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-{% include 'icons-header.html' %} <!-- Include the icons-header.html file -->
-<body>
+  {% include 'icons-header.html' %}
+  <!-- Include the icons-header.html file -->
+  <link rel="stylesheet" href="static/css/icons.css"> <!-- Include the icons.css file -->
+  <body>
     <div class="container">
-        <h1 class="my-4">Wayfire Configuration</h1>
-        <div class="d-flex flex-wrap" id="sectionsContainer">
-            {% for section in config.sections() %}
-                <div class="section-card" data-section="{{ section }}">
-                    <div class="card">
-                        <div class="card-header" data-target="#collapse{{ loop.index }}">
-                            <i class="fas card-icon {% include 'icons-class.html' %}" data-section="{{ section }}"></i>
-                            <h5 class="mb-0">{{ section }}</h5>
-                            <i class="fas fa-chevron-down toggle-icon"></i>
-                        </div>
-                        <div id="collapse{{ loop.index }}" class="card-body">
-                            <div class="list-group">
-                                {% for option, value in config.items(section) %}
-                                    <div class="list-group-item">
-                                        <strong>{{ option }}</strong>
-                                        <div class="input-group ml-3">
-                                            <form action="{{ url_for('update_option') }}" method="post" class="form-inline" onsubmit="event.stopPropagation();">
-                                                <input type="hidden" name="section" value="{{ section }}">
-                                                <input type="hidden" name="option" value="{{ option }}">
-                                                <input type="text" name="value" class="form-control mr-2" value="{{ value }}" required>
-                                                <button class="btn btn-danger delete-button" type="button" data-section="{{ section }}" data-option="{{ option }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                <button class="btn btn-primary" type="submit">
-                                                    <i class="fas fa-save"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+      <div class="d-flex flex-wrap" id="sectionsContainer">
+        {% for section in config.sections() %}
+        <div class="section-card" data-section="{{ section }}">
+          <div class="card">
+            <div class="card-header" data-target="#collapse{{ loop.index }}">
+              <i
+                class="fas card-icon {% include 'icons-class.html' %}"
+                data-section="{{ section }}"
+              ></i>
+              <h5 class="mb-0">{{ section }}</h5>
+              <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="collapse{{ loop.index }}" class="card-body">
+              <div class="list-group">
+                {% for option, value in config.items(section) %}
+                <div class="list-group-item">
+                  <strong>{{ option }}</strong>
+                  <form class="form-inline" onsubmit="event.stopPropagation();">
+                    <input type="hidden" name="section" value="{{ section }}" />
+                    <input type="hidden" name="option" value="{{ option }}" />
+                    <input
+                      type="text"
+                      name="value"
+                      class="form-control"
+                      value="{{ value }}"
+                      data-section="{{ section }}"
+                      data-option="{{ option }}"
+                      oninput="updateValue(event)"
+                    />
+                    <button
+                      class="btn btn-danger delete-button"
+                      type="button"
+                      data-section="{{ section }}"
+                      data-option="{{ option }}"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
                 </div>
-            {% endfor %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
         </div>
+        {% endfor %}
+      </div>
     </div>
-    <script src="static/js/icons.js"></script> <!-- Include the icons.js file -->
-</body>
+    <script src="static/js/icons.js"></script>
+    <!-- Include the icons.js file -->
+  </body>
 </html>
 

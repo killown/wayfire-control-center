@@ -1,13 +1,37 @@
+/* icons.css */
+
+/* General container styles */
+.container {
+  padding: 0 15px;
+}
+
+/* Centering the search bar container */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem; /* Space below the search bar */
+}
+
+/* Styling the search input */
+#searchInput {
+  width: 40% !important; /* Adjust width as needed */
+  max-width: 600px !important; /* Optional: Set a maximum width to avoid overly wide inputs on large screens */
+  box-sizing: border-box; /* Ensure padding and border are included in the total width */
+  margin: 0 auto; /* Center horizontally within the container */
+  display: block; /* Ensure the input is a block-level element */
+}
+
+/* Card styles */
 .section-card {
   margin-bottom: 20px;
+  flex: 1 1 400px; /* Adjust width to fit better on larger screens */
   margin-right: 1%;
   margin-left: 1%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  flex: 1 1 400px; /* Set the base width to 400px */
-  max-width: 100%;
+  overflow: hidden; /* Ensure cards fit into a grid */
 }
+
 .card {
   cursor: pointer;
   width: 100%;
@@ -15,6 +39,7 @@
   border-radius: 0.25rem;
   transition: box-shadow 0.3s ease;
 }
+
 .card-header {
   display: flex;
   align-items: center;
@@ -24,46 +49,74 @@
   border-bottom: 1px solid #ddd;
   position: relative;
 }
+
 .card-icon {
   font-size: 24px;
   margin-right: 10px;
 }
+
 .card-body {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   transform: scaleY(0);
   transform-origin: top;
-  transition:
-    max-height 0.5s ease,
-    opacity 0.5s ease,
-    transform 0.5s ease;
+  transition: max-height 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
 }
+
 .card-body.open {
-  max-height: 1000px;
+  max-height: 1000px; /* Adjust this value if needed */
   opacity: 1;
   transform: scaleY(1);
 }
+
 .card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-.container {
-  padding: 0 15px;
+
+/* Form and input styles */
+.input-group {
+  overflow: auto; /* Allow scrolling if content overflows */
 }
-@media (max-width: 1200px) {
-  .section-card {
-    flex: 1 1 calc(33.33% - 2%);
-  }
+
+.form-control {
+  min-width: 200px; /* Set a minimum width to avoid collapsing */
 }
-@media (max-width: 992px) {
-  .section-card {
-    flex: 1 1 calc(50% - 2%);
-  }
+
+/* Scrollbar styling (Optional) */
+.input-group::-webkit-scrollbar {
+  width: 8px;
 }
+
+.input-group::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.input-group::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+/* Responsive styles */
 @media (max-width: 768px) {
   .section-card {
-    flex: 1 1 calc(100% - 2%);
     margin-right: 0;
+    margin-left: 0;
+    flex: 1 1 100%; /* Ensure cards take full width on smaller screens */
+  }
+}
+
+@media (min-width: 769px) {
+  .section-card {
+    flex: 1 1 400px; /* Adjust for larger screens */
+  }
+
+  .section-card:nth-child(4n) {
+    margin-right: 0;
+  }
+
+  .section-card:nth-last-child(4n+1) {
     margin-left: 0;
   }
 }
+

@@ -1,18 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
     const sectionCards = document.querySelectorAll('.section-card');
-
-    searchInput.addEventListener('input', function() {
-        const query = searchInput.value.toLowerCase();
-        sectionCards.forEach(function(card) {
-            const sectionName = card.querySelector('.card-header h5').textContent.toLowerCase();
-            if (sectionName.includes(query)) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
 
     document.querySelectorAll('.card-header').forEach(header => {
         header.addEventListener('click', () => {
