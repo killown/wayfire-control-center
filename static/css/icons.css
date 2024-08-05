@@ -1,5 +1,3 @@
-/* icons.css */
-
 /* General container styles */
 .container {
   padding: 0 15px;
@@ -15,7 +13,7 @@
 /* Styling the search input */
 #searchInput {
   width: 40% !important; /* Adjust width as needed */
-  max-width: 600px !important; /* Optional: Set a maximum width to avoid overly wide inputs on large screens */
+  max-width: 2000px !important; /* Set a very high maximum width */
   box-sizing: border-box; /* Ensure padding and border are included in the total width */
   margin: 0 auto; /* Center horizontally within the container */
   display: block; /* Ensure the input is a block-level element */
@@ -24,7 +22,7 @@
 /* Card styles */
 .section-card {
   margin-bottom: 20px;
-  flex: 1 1 400px; /* Adjust width to fit better on larger screens */
+  flex: 1 1 100%; /* Take full width, adjusted dynamically */
   margin-right: 1%;
   margin-left: 1%;
   display: flex;
@@ -57,58 +55,68 @@
 
 .card-body {
   max-height: 0;
-  opacity: 0;
   overflow: hidden;
+  opacity: 0;
   transform: scaleY(0);
   transform-origin: top;
   transition: max-height 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
 }
 
 .card-body.open {
-  max-height: 1000px; /* Adjust this value if needed */
+  max-height: 2000px; /* Set a very high maximum height */
   opacity: 1;
   transform: scaleY(1);
 }
 
-.card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
 /* Form and input styles */
-.input-group {
-  overflow: auto; /* Allow scrolling if content overflows */
+.form-inline {
+  display: flex;
+  flex-wrap: wrap; /* Allow form controls to wrap */
+  align-items: center; /* Align items vertically */
 }
 
 .form-control {
-  min-width: 200px; /* Set a minimum width to avoid collapsing */
+  flex: 1 1 auto; /* Allow inputs to grow and shrink */
+  margin-right: 10px; /* Space between input and button */
 }
 
-/* New option form styles */
+.delete-button {
+  margin-left: 10px; /* Space between input and button */
+}
+
+/* Make sure the list-group-items fit within the card */
+.list-group-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  overflow: hidden; /* Ensure items don’t overflow their container */
+}
+
+.list-group-item form {
+  display: flex;
+  flex-wrap: nowrap; /* Prevent form controls from wrapping */
+  align-items: center; /* Align items vertically */
+  overflow: hidden;
+}
+
 .add-option-form {
   margin-top: 1rem;
   padding: 1rem;
   border-top: 1px solid #ddd;
-}
-
-.add-option-form .form-group {
-  margin-bottom: 1rem;
-}
-
-.add-option-form button {
-  margin-top: 0.5rem;
+  max-height: 300px; /* Set a maximum height for the form container */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 /* Scrollbar styling (Optional) */
-.input-group::-webkit-scrollbar {
+.add-option-form::-webkit-scrollbar {
   width: 8px;
 }
 
-.input-group::-webkit-scrollbar-thumb {
+.add-option-form::-webkit-scrollbar-thumb {
   background-color: #888;
   border-radius: 4px;
 }
 
-.input-group::-webkit-scrollbar-thumb:hover {
+.add-option-form::-webkit-scrollbar-thumb:hover {
   background-color: #555;
 }
 
