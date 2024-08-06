@@ -13,7 +13,7 @@
 /* Styling the search input */
 #searchInput {
   width: 40% !important; /* Adjust width as needed */
-  max-width: 2000px !important; /* Set a very high maximum width */
+  max-width: 100% !important; /* Set a very high maximum width */
   box-sizing: border-box; /* Ensure padding and border are included in the total width */
   margin: 0 auto; /* Center horizontally within the container */
   display: block; /* Ensure the input is a block-level element */
@@ -64,11 +64,14 @@
   opacity: 0;
   transform: scaleY(0);
   transform-origin: top;
-  transition: max-height 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    max-height 0.5s ease,
+    opacity 0.5s ease,
+    transform 0.5s ease;
 }
 
 .card-body.open {
-  max-height: 2000px; /* Set a very high maximum height */
+  max-height: 100%; /* Set a very high maximum height */
   opacity: 1;
   transform: scaleY(1);
 }
@@ -144,8 +147,7 @@
     margin-right: 0;
   }
 
-  .section-card:nth-last-child(4n+1) {
+  .section-card:nth-last-child(4n + 1) {
     margin-left: 0;
   }
 }
-
