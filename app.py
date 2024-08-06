@@ -3,6 +3,7 @@ import configparser
 import os
 import logging
 import xml.etree.ElementTree as ET
+import json
 
 app = Flask(__name__)
 
@@ -110,6 +111,9 @@ def inject_helpers():
     
     # Ensure enabled_plugins is a serializable list
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
+    if not isinstance(enabled_plugins, list):
+        enabled_plugins = []
+    
     return {
         'is_plugin_section': lambda section: is_plugin_section(section),
         'plugins_list': enabled_plugins,
@@ -118,14 +122,16 @@ def inject_helpers():
 
 @app.route('/')
 def index():
-    """Render the index page with the configuration."""
-    config = load_config()
-    metadata = get_metadata()  # Retrieve metadata files
-    
-    # Ensure enabled_plugins is a serializable list
+    config =  load_config()
+    metadata =  get_metadata()  
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
-
+    if enabled_plugins is None:
+        enabled_plugins = []
+    if metadata is None:
+        metadata = {}
+    
     return render_template('index.html', config=config, metadata=metadata, enabled_plugins=enabled_plugins)
+
 
 
 @app.route('/toggle_plugin', methods=['POST'])
@@ -184,6 +190,26 @@ def add_option():
         logging.error(f'Error saving configuration: {e}')
         return jsonify(status='error', message=str(e))
 
+@app.route('/icons')
+def icons():
+    config = load_config()
+    
+    # Get metadata files
+    metadata_plugins = get_metadata_files()
+    
+    # Ensure metadata_plugins is a list
+    if not isinstance(metadata_plugins, list):
+        metadata_plugins = []
+    
+    # Get enabled plugins from config
+    enabled_plugins = config.get('core', 'plugins', fallback='').split()
+    
+    # Ensure enabled_plugins is a list
+    if enabled_plugins is None:
+        enabled_plugins = []
+    
+    return render_template('icons.html', config=config, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
+
 @app.route('/delete_option', methods=['POST'])
 def delete_option():
     """Delete an option from the configuration file."""
@@ -207,41 +233,18 @@ def delete_option():
 
 @app.route('/update_option', methods=['POST'])
 def update_option():
-    section = request.form.get('section')
-    option = request.form.get('option')
-    value = request.form.get('value')
-
-    if not section or not option or value is None:
-        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
-
+    """Update an option in the configuration file."""
+    section = request.form['section']
+    option = request.form['option']
+    value = request.form['value']
+    
     config = load_config()
-
+    
     if section not in config.sections():
         config.add_section(section)
     
     config.set(section, option, value)
-
-    try:
-        with open(CONFIG_FILE, 'w') as configfile:
-            config.write(configfile)
-        return jsonify({'status': 'success'})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)})
-
-@app.route('/create_section', methods=['POST'])
-def create_section():
-    """Create a new section in the configuration file."""
-    section_name = request.form.get('section_name')
-    option_name = request.form.get('option_name')
-    option_value = request.form.get('option_value')
-
-    config = load_config()
-
-    if section_name not in config.sections():
-        config.add_section(section_name)
     
-    config.set(section_name, option_name, option_value)
-
     try:
         with open(CONFIG_FILE, 'w') as configfile:
             config.write(configfile)
@@ -250,14 +253,16 @@ def create_section():
         logging.error(f'Error saving configuration: {e}')
         return jsonify(status='error', message=str(e))
 
-@app.route('/help/<section>')
-def help_section(section):
-    """Serve the help content for a section."""
-    file_path = os.path.join(METADATA_PATH, f'{section}.xml')
-    if os.path.isfile(file_path):
-        html_content = parse_xml_to_html(file_path)
-        return html_content
-    return "Help content not found", 404
+@app.route('/preview_metadata/<filename>')
+def preview_metadata(filename):
+    """Preview metadata from XML file."""
+    file_path = os.path.join(METADATA_PATH, f'{filename}.xml')
+
+    if not os.path.isfile(file_path):
+        return "File not found", 404
+
+    html_content = parse_xml_to_html(file_path)
+    return html_content
 
 if __name__ == '__main__':
     app.run(debug=True)

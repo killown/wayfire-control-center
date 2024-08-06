@@ -66,6 +66,15 @@
       .card-header {
         cursor: pointer;
       }
+
+      /* Hide switch in non-plugin sections */
+      .switch {
+        display: none;
+      }
+
+      .plugin-section .switch {
+        display: inline-block;
+      }
     </style>
   </head>
   <body>
@@ -91,7 +100,7 @@
     <!-- Sections container -->
     <div class="d-flex flex-wrap" id="sectionsContainer">
       {% for section in config.sections() %}
-      <div class="section-card" data-section="{{ section }}">
+      <div class="section-card {% if section == 'core' %}non-plugin-section{% else %}plugin-section{% endif %}" data-section="{{ section }}">
         <div class="card">
           <div class="card-header" data-target="#collapse{{ loop.index }}">
             <i class="fas card-icon {% include 'icons-class.html' %}" data-section="{{ section }}"></i>
@@ -100,7 +109,7 @@
             <button class="btn btn-info btn-sm float-right" onclick="showHelp('{{ section }}')">
               <i class="fas fa-question-circle help-icon"></i>
             </button>
-            {% if is_plugin_section(section) %}
+            {% if section in enabled_plugins %}
             <label class="switch">
               <input type="checkbox" data-plugin="{{ section }}" onchange="togglePlugin('{{ section }}')" {% if section in enabled_plugins %}checked{% endif %}>
               <span class="slider"></span>
@@ -135,24 +144,6 @@
                 <button class="btn btn-success" type="submit">Add Option</button>
               </form>
             </div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    <!-- Plugin Switches Container -->
-    <div class="d-flex flex-wrap mt-4" id="pluginSwitchesContainer">
-      {% for plugin in all_plugins %}
-      <div class="plugin-switch-card" data-plugin="{{ plugin }}">
-        <div class="card">
-          <div class="card-header">
-            <i class="fas fa-plug card-icon"></i>
-            <h5 class="mb-0">{{ plugin }}</h5>
-            <label class="switch">
-              <input type="checkbox" data-plugin="{{ plugin }}" onchange="togglePlugin('{{ plugin }}')" {% if plugin in enabled_plugins %}checked{% endif %}>
-              <span class="slider"></span>
-            </label>
           </div>
         </div>
       </div>
@@ -263,9 +254,25 @@
         });
       }
 
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.switch input').forEach(input => {
-          input.checked = enabledPlugins.includes(input.dataset.plugin);
+      document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', function () {
+          const section = this.dataset.section;
+          const option = this.dataset.option;
+          if (confirm(`Are you sure you want to delete the option "${option}" from the section "${section}"?`)) {
+            fetch('/delete_option', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ section, option })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                location.reload(); // Reload the page to reflect changes
+              } else {
+                alert('Error deleting option: ' + data.message);
+              }
+            });
+          }
         });
       });
     </script>
