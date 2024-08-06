@@ -210,22 +210,13 @@
             <div class="add-option-form">
               <form onsubmit="addNewOption(event, '{{ section }}')">
                 <div class="form-group">
-                  <input
-                    type="text"
-                    name="newOption"
-                    class="form-control"
-                    placeholder="New option name"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <input
-                    type="text"
-                    name="newValue"
-                    class="form-control"
-                    placeholder="New option value"
-                    required
-                  />
+
+                <form method="post" action="/add_option" class="add-options-form">
+                <textarea name="options" rows="10" cols="40" placeholder="Enter options in the format option=value, one per line."></textarea>
+                    <input type="hidden" name="section" value="{{ section }}"> <!-- Replace with actual section -->
+                <button type="submit" class="submit-button">Add Options</button>
+                </form>
+
                 </div>
                 <button class="btn btn-success" type="submit">
                   Add Option

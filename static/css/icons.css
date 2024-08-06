@@ -19,6 +19,54 @@
   display: block; /* Ensure the input is a block-level element */
 }
 
+/* Container for the form */
+.add-options-section {
+  background: #fff;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Form styling */
+.add-options-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Textarea styling */
+.add-options-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Button styling */
+.submit-button {
+  padding: 2px 20px;
+  margin-bottom 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+.submit-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+}
+
 /* Create section button container */
 .create-section-container {
   margin-bottom: 2rem; /* Space below the button */

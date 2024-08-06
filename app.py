@@ -273,18 +273,25 @@ def toggle_plugin():
 
 @app.route('/add_option', methods=['POST'])
 def add_option():
-    """Add a new option to the configuration file."""
-    section = request.form['section']
-    option = request.form['option']
-    value = request.form['value']
-    
+    """Add multiple options to the configuration file."""
+    section = request.form.get('section')
+    options_text = request.form.get('options')
+    if not section or not options_text:
+        return jsonify(status='error', message='Missing parameters'), 400
     config = load_config()
 
     if section not in config.sections():
         config.add_section(section)
 
-    config.set(section, option, value)
-
+    lines = options_text.strip().split('\n')
+    
+    for line in lines:
+        if '=' in line:
+            option, value = line.split('=', 1)
+            option = option.strip()
+            value = value.strip()
+            config.set(section, option, value)
+    
     try:
         with open(CONFIG_FILE, 'w') as configfile:
             config.write(configfile)
@@ -292,6 +299,7 @@ def add_option():
     except Exception as e:
         logging.error(f'Error saving configuration: {e}')
         return jsonify(status='error', message=str(e))
+
 
 @app.route('/icons')
 def icons():
