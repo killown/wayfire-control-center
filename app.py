@@ -48,6 +48,7 @@ def get_metadata_files():
         logging.error(f'METADATA_PATH {METADATA_PATH} not found.')
         return []
 
+
 def convert_element_to_html(element):
     """Convert XML element to HTML."""
     html = "<!DOCTYPE html>\n<html lang='en'>\n<head>\n"
@@ -59,6 +60,7 @@ def convert_element_to_html(element):
     html += "h1, h2 { color: #333; }\n"
     html += "p { margin: 10px 0; }\n"
     html += "strong { font-weight: bold; }\n"
+    html += "pre { white-space: pre-wrap; } /* Preserve whitespace */\n"
     html += "</style>\n</head>\n<body>\n"
     
     # Extract the plugin name and description
@@ -85,6 +87,7 @@ def convert_element_to_html(element):
     html += "</body>\n</html>"
     
     return html
+
 
 def get_metadata():
     """Load metadata from XML files and return a list of plugins."""
@@ -117,6 +120,18 @@ def is_plugin_section(section, metadata_path=METADATA_PATH):
     metadata_file = os.path.join(metadata_path, f'{section}.xml')
     return os.path.isfile(metadata_file)
 
+@app.route('/help/<section>')
+def help_content(section):
+    """Fetch and return help content for a specific section."""
+    xml_file = os.path.join(METADATA_PATH, f'{section}.xml')
+    
+    if os.path.isfile(xml_file):
+        html_content = parse_xml_to_html(xml_file)
+        return jsonify({'status': 'success', 'content': html_content})
+    else:
+        return jsonify({'status': 'error', 'message': 'Help content not found'})
+
+
 def update_wayfire_ini():
     """Update the Wayfire configuration file with new sections."""
     config = load_config()
@@ -138,23 +153,39 @@ def update_wayfire_ini():
     except Exception as e:
         logging.error(f'Error saving configuration: {e}')
 
+
 @app.context_processor
 def inject_helpers():
-    """Inject helper functions into the template context."""
-    update_wayfire_ini()  # Ensure configuration is updated
-    config = load_config()
-    metadata = get_metadata()  # Load metadata
+    """Inject helper functions and variables into the template context."""
+    try:
+        update_wayfire_ini()
+        config = load_config()
+    except Exception as e:
+        logging.error(f'Error updating or loading config: {e}')
+        config = configparser.ConfigParser()  # Provide a fallback or empty config
+
+    try:
+        metadata = get_metadata()
+    except Exception as e:
+        logging.error(f'Error loading metadata: {e}')
+        metadata = []
+
+    metadata_plugins = [item['name'] for item in metadata]
     
-    # Ensure enabled_plugins is a serializable list
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
-    if not isinstance(enabled_plugins, list):
-        enabled_plugins = []
     
+    enabled_plugins = [plugin for plugin in enabled_plugins if plugin in metadata_plugins]
+
+    def is_plugin_section(section):
+        """Check if a section is a plugin based on its metadata."""
+        return section in metadata_plugins
+
     return {
-        'is_plugin_section': lambda section: is_plugin_section(section),
+        'is_plugin_section': is_plugin_section,
         'plugins_list': enabled_plugins,
         'metadata': metadata
     }
+
 
 @app.route('/')
 def index():
