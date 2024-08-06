@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 CONFIG_FILE = os.path.expanduser('~/.config/wayfire.ini')
 METADATA_PATH = '/usr/share/wayfire/metadata'
+metadata_plugins = None 
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -48,6 +49,7 @@ def get_metadata_files():
         logging.error(f'METADATA_PATH {METADATA_PATH} not found.')
         return []
 
+metadata_plugins = get_metadata_files()
 
 def convert_element_to_html(element):
     """Convert XML element to HTML."""
@@ -131,21 +133,18 @@ def help_content(section):
     else:
         return jsonify({'status': 'error', 'message': 'Help content not found'})
 
-
 def update_wayfire_ini():
     """Update the Wayfire configuration file with new sections."""
     config = load_config()
     metadata_sections = get_metadata_files()
     existing_sections = config.sections()
 
-    # Add new sections to the configuration if they don't already exist
     for section in metadata_sections:
         if section not in existing_sections:
             config.add_section(section)
             # Optionally, set default options here
             # config.set(section, 'default_option', 'default_value')
 
-    # Write updated configuration back to file
     try:
         with open(CONFIG_FILE, 'w') as configfile:
             config.write(configfile)
@@ -190,14 +189,15 @@ def inject_helpers():
 @app.route('/')
 def index():
     config = load_config()
-    metadata = get_metadata()  
+    metadata = get_metadata()
+    metadata_plugins = get_metadata_files()
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
     if enabled_plugins is None:
         enabled_plugins = []
     if metadata is None:
         metadata = {}
     
-    return render_template('index.html', config=config, metadata=metadata, enabled_plugins=enabled_plugins)
+    return render_template('index.html', config=config, metadata=metadata, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
 
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():
@@ -258,21 +258,8 @@ def add_option():
 @app.route('/icons')
 def icons():
     config = load_config()
-    
-    # Get metadata files
-    metadata_plugins = get_metadata_files()
-    
-    # Ensure metadata_plugins is a list
-    if not isinstance(metadata_plugins, list):
-        metadata_plugins = []
-    
-    # Get enabled plugins from config
+    print(metadata_plugins)
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
-    
-    # Ensure enabled_plugins is a list
-    if enabled_plugins is None:
-        enabled_plugins = []
-    
     return render_template('icons.html', config=config, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
 
 @app.route('/delete_option', methods=['POST'])

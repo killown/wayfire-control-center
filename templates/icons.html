@@ -67,15 +67,6 @@
         cursor: pointer;
       }
 
-      /* Hide switch in non-plugin sections */
-      .switch {
-        display: none;
-      }
-
-      .plugin-section .switch {
-        display: inline-block;
-      }
-
       /* Container for sections */
       .section-card {
         margin: 10px;
@@ -167,7 +158,7 @@
             >
               <i class="fas fa-question-circle help-icon"></i>
             </button>
-            {% if section in enabled_plugins %}
+            {% if section in metadata_plugins %}
             <label class="switch">
               <input
                 type="checkbox"
@@ -285,35 +276,16 @@
     <script src="static/js/icons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Pass the enabled_plugins list to JavaScript
+      // Pass the enabled_plugins and plugin_sections lists to JavaScript
       const enabledPlugins = {{ enabled_plugins|tojson|safe }};
 
       function showHelp(section) {
         fetch(`/help/${section}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === "success") {
-              // Sanitize the fetched content to remove unnecessary HTML tags and styles
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(data.content, 'text/html');
-
-              // Extract relevant content
-              const relevantContent = doc.body.innerHTML;
-
-              // Remove unnecessary HTML tags
-              const cleanedContent = relevantContent.replace(/<meta[^>]*>/g, '')
-                                                    .replace(/<style[^>]*>.*?<\/style>/g, '')
-                                                    .replace(/<title[^>]*>.*?<\/title>/g, '');
-
-              // Set the sanitized content to the modal
-              document.getElementById("helpContent").innerHTML = cleanedContent;
-
-              // Show the modal
-              const myModal = new bootstrap.Modal(document.getElementById("helpModal"));
-              myModal.show();
-            } else {
-              console.error("Error fetching help content:", data.message);
-            }
+          .then(response => response.text())
+          .then(html => {
+            document.getElementById('helpContent').innerHTML = html;
+            var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
+            myModal.show();
           });
       }
 
@@ -340,10 +312,10 @@
 
       function createNewSection(event) {
         event.preventDefault();
-        const formData = new FormData(event.target);
-        const sectionName = formData.get('section_name');
-        const optionName = formData.get('option_name');
-        const optionValue = formData.get('option_value');
+        const form = event.target;
+        const sectionName = form.section_name.value;
+        const optionName = form.option_name.value;
+        const optionValue = form.option_value.value;
 
         fetch('/create_section', {
           method: 'POST',
@@ -366,17 +338,17 @@
 
       function addNewOption(event, section) {
         event.preventDefault();
-        const formData = new FormData(event.target);
-        const newOption = formData.get('newOption');
-        const newValue = formData.get('newValue');
+        const form = event.target;
+        const newOption = form.newOption.value;
+        const newValue = form.newValue.value;
 
         fetch('/add_option', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             section: section,
-            option: newOption,
-            value: newValue
+            new_option: newOption,
+            new_value: newValue
           })
         })
         .then(response => response.json())
@@ -413,15 +385,18 @@
       }
 
       document.querySelectorAll('.delete-button').forEach(button => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
           const section = this.getAttribute('data-section');
           const option = this.getAttribute('data-option');
 
-          if (confirm(`Are you sure you want to delete the option "${option}" from section "${section}"?`)) {
+          if (confirm('Are you sure you want to delete this option?')) {
             fetch('/delete_option', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ section: section, option: option })
+              body: JSON.stringify({
+                section: section,
+                option: option
+              })
             })
             .then(response => response.json())
             .then(data => {
