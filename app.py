@@ -59,36 +59,37 @@ def convert_element_to_html(element):
     html += "<title>Plugin Documentation</title>\n"
     html += "<style>\n"
     html += "body { font-family: Arial, sans-serif; margin: 20px; }\n"
-    html += "h1, h2 { color: #333; }\n"
+    html += "h1 { color: #333; }\n"
+    html += "h2 { color: #333; }\n"
+    html += "h3 { color: #333; }\n"
+    html += "h4 { color: #333; }\n"
     html += "p { margin: 10px 0; }\n"
     html += "strong { font-weight: bold; }\n"
     html += "pre { white-space: pre-wrap; } /* Preserve whitespace */\n"
     html += "</style>\n</head>\n<body>\n"
     
-    # Extract the plugin name and description
+    # Extract the plugin element
     plugin = element.find('plugin')
     if plugin is not None:
-        plugin_name = plugin.get('name')
-        plugin_short_desc = plugin.find('_short').text if plugin.find('_short') is not None else "No short description provided."
-        plugin_long_desc = plugin.find('_long').text if plugin.find('_long') is not None else "No long description provided."
+        plugin_long_desc = plugin.find('_long').text.strip() if plugin.find('_long') is not None else "No long description provided."
 
-        html += f"<h1>{plugin_name}</h1>\n"
-        html += f"<p><strong>Short Description:</strong> {plugin_short_desc}</p>\n"
-        html += f"<p><strong>Long Description:</strong> {plugin_long_desc}</p>\n"
+        # Add the long description at the top with h2 tag
+        html += f"<h2>{plugin_long_desc}</h2>\n"
 
         # Iterate through all options to extract relevant information
         for option in plugin.findall('option'):
             name = option.get('name')
-            long_desc = option.find('_long').text if option.find('_long') is not None else "No description provided."
-            default_value = option.find('default').text if option.find('default') is not None else "No default value provided."
+            long_desc = option.find('_long').text.strip() if option.find('_long') is not None else "No description provided."
+            default_value = option.find('default').text.strip() if option.find('default') is not None else "No default value provided."
             
-            html += f"<h2>{name}</h2>\n"
-            html += f"<p><strong>Description:</strong> {long_desc}</p>\n"
+            html += f"<h4>Option: {name}</h4>\n"
+            html += f"<p>{long_desc}</p>\n"
             html += f"<p><strong>Default Value:</strong> {default_value}</p>\n"
 
     html += "</body>\n</html>"
     
     return html
+
 
 
 def get_metadata():
