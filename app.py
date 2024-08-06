@@ -24,6 +24,15 @@ def parse_xml_to_html(file_path):
     root = tree.getroot()
     return convert_element_to_html(root)
 
+def get_metadata_files():
+    """Get the list of XML files from the METADATA_PATH directory."""
+    try:
+        files = [f for f in os.listdir(METADATA_PATH) if f.endswith('.xml')]
+        return [os.path.splitext(f)[0] for f in files]
+    except FileNotFoundError:
+        logging.error(f'METADATA_PATH {METADATA_PATH} not found.')
+        return []
+
 def convert_element_to_html(element):
     """Convert XML element to HTML."""
     html = "<!DOCTYPE html>\n<html lang='en'>\n<head>\n"
@@ -62,55 +71,96 @@ def convert_element_to_html(element):
     
     return html
 
+def get_metadata():
+    """Load metadata from XML files and return a list of plugins."""
+    plugins = []
+    for file_name in get_metadata_files():
+        file_path = os.path.join(METADATA_PATH, f'{file_name}.xml')
+        if os.path.isfile(file_path):
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            plugin = root.find('plugin')
+            if plugin is not None:
+                plugin_name = plugin.get('name')
+                plugins.append({'name': plugin_name, 'file': file_path})
+    return plugins
 
-def is_plugin_section(section, config):
-    """Check if a section is a plugin based on the core plugins list."""
-    plugins_list = config.get('core', 'plugins', fallback='')
-    plugins = plugins_list.split()
-    return section in plugins
+def is_plugin_section(section, metadata_path=METADATA_PATH):
+    """
+    Check if a section is a plugin based on the presence of its metadata file.
+    
+    Args:
+        section (str): The name of the section/plugin.
+        metadata_path (str): The directory path where metadata XML files are stored.
+
+    Returns:
+        bool: True if the section is a plugin, False otherwise.
+    """
+    if not isinstance(metadata_path, str):
+        raise TypeError("metadata_path should be a string")
+
+    metadata_file = os.path.join(metadata_path, f'{section}.xml')
+    return os.path.isfile(metadata_file)
 
 @app.context_processor
 def inject_helpers():
     """Inject helper functions into the template context."""
     config = load_config()
+    metadata = get_metadata()  # Load metadata
+    
+    # Ensure enabled_plugins is a serializable list
+    enabled_plugins = config.get('core', 'plugins', fallback='').split()
     return {
-        'is_plugin_section': lambda section: is_plugin_section(section, config),
-        'plugins_list': config.get('core', 'plugins', fallback='').split()
+        'is_plugin_section': lambda section: is_plugin_section(section),
+        'plugins_list': enabled_plugins,
+        'metadata': metadata
     }
 
 @app.route('/')
 def index():
     """Render the index page with the configuration."""
     config = load_config()
-    return render_template('index.html', config=config)
+    metadata = get_metadata()  # Retrieve metadata files
+    
+    # Ensure enabled_plugins is a serializable list
+    enabled_plugins = config.get('core', 'plugins', fallback='').split()
+
+    return render_template('index.html', config=config, metadata=metadata, enabled_plugins=enabled_plugins)
+
 
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():
     """Toggle the plugin in the configuration file."""
     data = request.get_json()
-    section = data.get('section')
-    
-    if not section:
-        return jsonify(status='error', message='No section provided'), 400
+    plugin = data.get('plugin')
+
+    if not plugin:
+        return jsonify(status='error', message='No plugin provided'), 400
 
     config = load_config()
     plugins_list = config.get('core', 'plugins', fallback='').split()
 
-    if section in plugins_list:
-        plugins_list.remove(section)
+    # Get the list of valid plugins from metadata
+    valid_plugins = [os.path.splitext(f)[0] for f in os.listdir(METADATA_PATH) if f.endswith('.xml')]
+
+    if plugin not in valid_plugins:
+        return jsonify(status='error', message='Plugin not found in metadata'), 400
+
+    if plugin in plugins_list:
+        plugins_list.remove(plugin)
     else:
-        plugins_list.append(section)
+        plugins_list.append(plugin)
 
     config.set('core', 'plugins', ' '.join(plugins_list))
 
-    with open(CONFIG_FILE, 'w') as configfile:
-        config.write(configfile)
-
-    logging.info(f'Toggled plugin: {section}. New plugins list: {plugins_list}')
-
-    return jsonify(status='success')
-
-
+    try:
+        with open(CONFIG_FILE, 'w') as configfile:
+            config.write(configfile)
+        logging.info(f'Toggled plugin: {plugin}. New plugins list: {plugins_list}')
+        return jsonify(status='success')
+    except Exception as e:
+        logging.error(f'Error saving configuration: {e}')
+        return jsonify(status='error', message=str(e))
 
 @app.route('/add_option', methods=['POST'])
 def add_option():
@@ -207,7 +257,7 @@ def help_section(section):
     if os.path.isfile(file_path):
         html_content = parse_xml_to_html(file_path)
         return html_content
-    return "Help content not found.", 404
+    return "Help content not found", 404
 
 if __name__ == '__main__':
     app.run(debug=True)
