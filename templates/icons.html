@@ -3,14 +3,6 @@
   {% include 'icons-header.html' %}
   <body>
     <div class="container">
-      <div class="search-bar-container">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search..."
-          class="form-control"
-        />
-      </div>
       <div class="d-flex flex-wrap" id="sectionsContainer">
         {% for section in config.sections() %}
         <div class="section-card" data-section="{{ section }}">
