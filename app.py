@@ -62,11 +62,55 @@ def convert_element_to_html(element):
     
     return html
 
+
+def is_plugin_section(section, config):
+    """Check if a section is a plugin based on the core plugins list."""
+    plugins_list = config.get('core', 'plugins', fallback='')
+    plugins = plugins_list.split()
+    return section in plugins
+
+@app.context_processor
+def inject_helpers():
+    """Inject helper functions into the template context."""
+    config = load_config()
+    return {
+        'is_plugin_section': lambda section: is_plugin_section(section, config),
+        'plugins_list': config.get('core', 'plugins', fallback='').split()
+    }
+
 @app.route('/')
 def index():
     """Render the index page with the configuration."""
     config = load_config()
     return render_template('index.html', config=config)
+
+@app.route('/toggle_plugin', methods=['POST'])
+def toggle_plugin():
+    """Toggle the plugin in the configuration file."""
+    data = request.get_json()
+    section = data.get('section')
+    
+    if not section:
+        return jsonify(status='error', message='No section provided'), 400
+
+    config = load_config()
+    plugins_list = config.get('core', 'plugins', fallback='').split()
+
+    if section in plugins_list:
+        plugins_list.remove(section)
+    else:
+        plugins_list.append(section)
+
+    config.set('core', 'plugins', ' '.join(plugins_list))
+
+    with open(CONFIG_FILE, 'w') as configfile:
+        config.write(configfile)
+
+    logging.info(f'Toggled plugin: {section}. New plugins list: {plugins_list}')
+
+    return jsonify(status='success')
+
+
 
 @app.route('/add_option', methods=['POST'])
 def add_option():

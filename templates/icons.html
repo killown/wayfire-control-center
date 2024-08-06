@@ -4,13 +4,52 @@
   <head>
     <style>
       .help-icon {
-        color: black; /* Icon color */
-        background: none; /* Remove any background */
-        border: none; /* Remove any border */
+        color: black;
+        background: none;
+        border: none;
       }
       .btn-info {
-        background-color: transparent; /* Remove background color from button */
-        border: none; /* Remove border from button */
+        background-color: transparent;
+        border: none;
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 20px;
+      }
+      .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 20px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+      }
+      input:checked + .slider {
+        background-color: #2196F3;
+      }
+      input:checked + .slider:before {
+        transform: translateX(14px);
       }
     </style>
   </head>
@@ -68,8 +107,14 @@
             <h5 class="mb-0">{{ section }}</h5>
             <i class="fas fa-chevron-down toggle-icon"></i>
             <button class="btn btn-info btn-sm float-right" onclick="showHelp('{{ section }}')">
-              <i class="fas fa-question-circle help-icon"></i> <!-- Font Awesome help icon -->
+              <i class="fas fa-question-circle help-icon"></i>
             </button>
+            {% if is_plugin_section(section) %}
+            <label class="switch">
+              <input type="checkbox" onchange="togglePlugin('{{ section }}')" {% if section in plugins_list %}checked{% endif %}>
+              <span class="slider"></span>
+            </label>
+            {% endif %}
           </div>
           <div id="collapse{{ loop.index }}" class="card-body">
             <div class="list-group">
@@ -159,6 +204,22 @@
             var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
             myModal.show();
           });
+      }
+
+      function togglePlugin(section) {
+        fetch('/toggle_plugin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ section: section })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+          } else {
+            alert('Error toggling plugin: ' + data.message);
+          }
+        });
       }
     </script>
   </body>
