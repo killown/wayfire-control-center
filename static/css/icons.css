@@ -19,6 +19,11 @@
   display: block; /* Ensure the input is a block-level element */
 }
 
+/* Create section button container */
+.create-section-container {
+  margin-bottom: 2rem; /* Space below the button */
+}
+
 /* Card styles */
 .section-card {
   margin-bottom: 20px;
@@ -48,21 +53,6 @@
   position: relative;
 }
 
-/* Create section button container */
-.create-section-container {
-  margin-bottom: 2rem; /* Adjust this value to control the space below the button */
-}
-
-/* Create section button styles */
-.create-section-container .btn {
-  margin-bottom: 1rem; /* Add some space below the button itself */
-}
-
-/* Optional: Increase padding inside the button */
-.create-section-container .btn-primary {
-  padding: 0.75rem 1.5rem; /* Adjust padding as needed */
-}
-
 .card-icon {
   font-size: 24px;
   margin-right: 10px;
@@ -74,10 +64,7 @@
   opacity: 0;
   transform: scaleY(0);
   transform-origin: top;
-  transition:
-    max-height 0.5s ease,
-    opacity 0.5s ease,
-    transform 0.5s ease;
+  transition: max-height 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
 }
 
 .card-body.open {
@@ -125,32 +112,6 @@
   overflow-y: auto; /* Enable vertical scrolling */
 }
 
-/* Create New Section form styles */
-.create-section-container {
-  margin-top: 1rem;
-  text-align: center; /* Center the form within the container */
-}
-
-#createSectionForm {
-  display: none; /* Initially hidden */
-  margin-top: 1rem;
-}
-
-#createSectionForm .form-group {
-  margin-bottom: 15px;
-}
-
-#createSectionForm input {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-#createSectionForm button {
-  display: block;
-  margin: 0 auto;
-}
-
 /* Scrollbar styling (Optional) */
 .add-option-form::-webkit-scrollbar {
   width: 8px;
@@ -165,40 +126,7 @@
   background-color: #555;
 }
 
-/* Button styles */
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.btn-success {
-  background-color: #28a745;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-}
-
-.btn-primary {
-  background-color: #007bff;
-}
-
-.delete-button {
-  border: none;
-  background: none;
-  color: #dc3545; /* Red color for delete button */
-  cursor: pointer;
-}
-
-.delete-button i {
-  margin-right: 5px;
-}
-
-/* Responsive layout */
+/* Responsive styles */
 @media (max-width: 768px) {
   .section-card {
     margin-right: 0;
@@ -216,7 +144,8 @@
     margin-right: 0;
   }
 
-  .section-card:nth-last-child(4n + 1) {
+  .section-card:nth-last-child(4n+1) {
     margin-left: 0;
   }
 }
+
