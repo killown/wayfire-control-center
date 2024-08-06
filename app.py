@@ -4,6 +4,8 @@ import os
 import logging
 import xml.etree.ElementTree as ET
 import json
+import shutil 
+from datetime import datetime 
 
 app = Flask(__name__)
 
@@ -26,6 +28,15 @@ def sort_wayfire_ini_sections(config_file):
     
     with open(config_file, 'w') as configfile:
         sorted_config.write(configfile)
+
+def backup_wayfire_ini():
+    backup_dir = '/tmp/wayfire_config_backup/'
+    os.makedirs(backup_dir, exist_ok=True)
+    timestamp = datetime.now().strftime('%H-%d-%Y')
+    backup_filename = f'wayfire-config-{timestamp}.ini'
+    backup_path = os.path.join(backup_dir, backup_filename)
+    shutil.copy2(CONFIG_FILE, backup_path)
+    return backup_path
 
 def load_config():
     """Load the configuration from the wayfire.ini file."""
@@ -90,6 +101,28 @@ def convert_element_to_html(element):
     
     return html
 
+@app.route('/update_option', methods=['POST'])
+def update_option():
+    data = request.get_json()
+    section = data.get('section')
+    option = data.get('option')
+    value = data.get('value')
+
+    if not all([section, option, value]):
+        return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
+
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+
+    if not config.has_section(section):
+        return jsonify({'status': 'error', 'message': 'Section not found'}), 404
+
+    config.set(section, option, value)
+
+    with open(CONFIG_FILE, 'w') as configfile:
+        config.write(configfile)
+
+    return jsonify({'status': 'success'}), 200
 
 
 def get_metadata():
@@ -189,6 +222,8 @@ def inject_helpers():
 
 @app.route('/')
 def index():
+    # make it backup wayfire.ini during server startup
+    backup = backup_wayfire_ini()
     config = load_config()
     metadata = get_metadata()
     metadata_plugins = get_metadata_files()
@@ -198,7 +233,7 @@ def index():
     if metadata is None:
         metadata = {}
     
-    return render_template('index.html', config=config, metadata=metadata, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
+    return render_template('index.html', config=config, metadata=metadata, backup_ini = backup, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
 
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():

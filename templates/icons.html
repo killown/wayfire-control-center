@@ -237,7 +237,9 @@
       </div>
       {% endfor %}
     </div>
-
+<h4>Backup File</h4>
+    <p><a href="file://{{backup_ini}}"  target="_blank">Download wayfire-config-11-06-2024.ini</a></p>
+</body>
     <!-- Help Modal -->
     <div
       class="modal fade"
@@ -276,139 +278,133 @@
     <script src="static/js/icons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Pass the enabled_plugins and plugin_sections lists to JavaScript
-      const enabledPlugins = {{ enabled_plugins|tojson|safe }};
+          // Pass the enabled_plugins and plugin_sections lists to JavaScript
+          const enabledPlugins = {{ enabled_plugins|tojson|safe }};
 
-      function showHelp(section) {
-        fetch(`/help/${section}`)
-          .then(response => response.text())
-          .then(html => {
-            document.getElementById('helpContent').innerHTML = html;
-            var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
-            myModal.show();
-          });
-      }
+          function showHelp(section) {
+            fetch(`/help/${section}`)
+              .then(response => response.json())
+              .then(data => {
+                const helpContent = data.content;
 
-      function togglePlugin(plugin) {
-        fetch('/toggle_plugin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plugin: plugin })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error toggling plugin: ' + data.message);
+                // Display help content in the modal
+                document.getElementById('helpContent').innerHTML = helpContent;
+                var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
+                myModal.show();
+              });
           }
-        });
-      }
 
-      function toggleCreateSectionForm() {
-        const form = document.getElementById('createSectionForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      }
-
-      function createNewSection(event) {
-        event.preventDefault();
-        const form = event.target;
-        const sectionName = form.section_name.value;
-        const optionName = form.option_name.value;
-        const optionValue = form.option_value.value;
-
-        fetch('/create_section', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            section_name: sectionName,
-            option_name: optionName,
-            option_value: optionValue
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error creating section: ' + data.message);
-          }
-        });
-      }
-
-      function addNewOption(event, section) {
-        event.preventDefault();
-        const form = event.target;
-        const newOption = form.newOption.value;
-        const newValue = form.newValue.value;
-
-        fetch('/add_option', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            section: section,
-            new_option: newOption,
-            new_value: newValue
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error adding option: ' + data.message);
-          }
-        });
-      }
-
-      function updateValue(event) {
-        const input = event.target;
-        const section = input.getAttribute('data-section');
-        const option = input.getAttribute('data-option');
-        const value = input.value;
-
-        fetch('/update_option', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            section: section,
-            option: option,
-            value: value
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status !== 'success') {
-            alert('Error updating option: ' + data.message);
-          }
-        });
-      }
-
-      document.querySelectorAll('.delete-button').forEach(button => {
-        button.addEventListener('click', function() {
-          const section = this.getAttribute('data-section');
-          const option = this.getAttribute('data-option');
-
-          if (confirm('Are you sure you want to delete this option?')) {
-            fetch('/delete_option', {
+          function togglePlugin(plugin) {
+            fetch('/toggle_plugin', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                section: section,
-                option: option
-              })
+              body: JSON.stringify({ plugin: plugin })
             })
             .then(response => response.json())
             .then(data => {
               if (data.status === 'success') {
                 location.reload(); // Reload the page to reflect changes
               } else {
-                alert('Error deleting option: ' + data.message);
+                alert('Error toggling plugin: ' + data.message);
               }
             });
           }
+
+          function toggleCreateSectionForm() {
+            const form = document.getElementById('createSectionForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+          }
+
+          function createNewSection(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch('/create_section', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                location.reload(); // Reload the page to include the new section
+              } else {
+                alert('Error creating section: ' + data.message);
+              }
+            });
+          }
+
+          function addNewOption(event, section) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            formData.append('section', section);
+
+            fetch('/add_option', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                location.reload(); // Reload the page to reflect new option
+              } else {
+                alert('Error adding option: ' + data.message);
+              }
+            });
+          }
+
+            function updateValue(event) {
+        const input = event.target;
+        const section = input.getAttribute('data-section');
+        const option = input.getAttribute('data-option');
+        const value = input.value;
+
+        // Send the updated value to the server
+        fetch('/update_option', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ section: section, option: option, value: value })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            console.log('Value updated successfully');
+          } else {
+            console.error('Error updating value:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Network error:', error);
         });
+      }
+
+      // Add event listener to all input fields with updateValue function
+      document.querySelectorAll('.form-control[data-section][data-option]').forEach(input => {
+        input.addEventListener('input', updateValue);
       });
+
+          document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+              const section = button.getAttribute('data-section');
+              const option = button.getAttribute('data-option');
+              if (confirm('Are you sure you want to delete this option?')) {
+                fetch('/delete_option', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ section: section, option: option })
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.status === 'success') {
+                    location.reload(); // Reload the page to remove the deleted option
+                  } else {
+                    alert('Error deleting option: ' + data.message);
+                  }
+                });
+              }
+            });
+          });
     </script>
   </body>
 </html>
