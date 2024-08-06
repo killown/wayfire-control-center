@@ -83,8 +83,10 @@ def convert_element_to_html(element):
     plugin = element.find('plugin')
     if plugin is not None:
         plugin_long_desc = plugin.find('_long').text.strip() if plugin.find('_long') is not None else "No long description provided."
+        plugin_name = plugin.get("name")
 
         # Add the long description at the top with h2 tag
+        html += f'<a href="https://github.com/WayfireWM/wayfire/wiki/Configuration#' + plugin_name  + '" class="more-help-link" target="_blank">More Help In Wayfire Wiki</a>\n<br></br>'
         html += f"<h2>{plugin_long_desc}</h2>\n"
 
         # Iterate through all options to extract relevant information
