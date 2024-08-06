@@ -13,8 +13,22 @@ METADATA_PATH = '/usr/share/wayfire/metadata'
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
+def sort_wayfire_ini_sections(config_file):
+    config = configparser.ConfigParser(interpolation=None)
+    config.read(config_file)
+    sections = sorted(config.sections())
+    sorted_config = configparser.ConfigParser(interpolation=None)
+    for section in sections:
+        sorted_config.add_section(section)
+        for key, value in config.items(section):
+            sorted_config.set(section, key, value)
+    
+    with open(config_file, 'w') as configfile:
+        sorted_config.write(configfile)
+
 def load_config():
     """Load the configuration from the wayfire.ini file."""
+    sort_wayfire_ini_sections(CONFIG_FILE)
     config = configparser.ConfigParser(interpolation=None)  # Disable interpolation
     config.read(CONFIG_FILE)
     return config
@@ -29,7 +43,7 @@ def get_metadata_files():
     """Get the list of XML files from the METADATA_PATH directory."""
     try:
         files = [f for f in os.listdir(METADATA_PATH) if f.endswith('.xml')]
-        return [os.path.splitext(f)[0] for f in files]
+        return sorted([os.path.splitext(f)[0] for f in files])
     except FileNotFoundError:
         logging.error(f'METADATA_PATH {METADATA_PATH} not found.')
         return []
@@ -103,9 +117,31 @@ def is_plugin_section(section, metadata_path=METADATA_PATH):
     metadata_file = os.path.join(metadata_path, f'{section}.xml')
     return os.path.isfile(metadata_file)
 
+def update_wayfire_ini():
+    """Update the Wayfire configuration file with new sections."""
+    config = load_config()
+    metadata_sections = get_metadata_files()
+    existing_sections = config.sections()
+
+    # Add new sections to the configuration if they don't already exist
+    for section in metadata_sections:
+        if section not in existing_sections:
+            config.add_section(section)
+            # Optionally, set default options here
+            # config.set(section, 'default_option', 'default_value')
+
+    # Write updated configuration back to file
+    try:
+        with open(CONFIG_FILE, 'w') as configfile:
+            config.write(configfile)
+        logging.info('Wayfire configuration file updated with new sections.')
+    except Exception as e:
+        logging.error(f'Error saving configuration: {e}')
+
 @app.context_processor
 def inject_helpers():
     """Inject helper functions into the template context."""
+    update_wayfire_ini()  # Ensure configuration is updated
     config = load_config()
     metadata = get_metadata()  # Load metadata
     
@@ -122,8 +158,8 @@ def inject_helpers():
 
 @app.route('/')
 def index():
-    config =  load_config()
-    metadata =  get_metadata()  
+    config = load_config()
+    metadata = get_metadata()  
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
     if enabled_plugins is None:
         enabled_plugins = []
@@ -131,8 +167,6 @@ def index():
         metadata = {}
     
     return render_template('index.html', config=config, metadata=metadata, enabled_plugins=enabled_plugins)
-
-
 
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():
@@ -229,40 +263,10 @@ def delete_option():
             except Exception as e:
                 logging.error(f'Error saving configuration: {e}')
                 return jsonify(status='error', message=str(e))
-    return jsonify(status='error', message='Section or option not found')
-
-@app.route('/update_option', methods=['POST'])
-def update_option():
-    """Update an option in the configuration file."""
-    section = request.form['section']
-    option = request.form['option']
-    value = request.form['value']
-    
-    config = load_config()
-    
-    if section not in config.sections():
-        config.add_section(section)
-    
-    config.set(section, option, value)
-    
-    try:
-        with open(CONFIG_FILE, 'w') as configfile:
-            config.write(configfile)
-        return jsonify(status='success')
-    except Exception as e:
-        logging.error(f'Error saving configuration: {e}')
-        return jsonify(status='error', message=str(e))
-
-@app.route('/preview_metadata/<filename>')
-def preview_metadata(filename):
-    """Preview metadata from XML file."""
-    file_path = os.path.join(METADATA_PATH, f'{filename}.xml')
-
-    if not os.path.isfile(file_path):
-        return "File not found", 404
-
-    html_content = parse_xml_to_html(file_path)
-    return html_content
+        else:
+            return jsonify(status='error', message='Option not found'), 400
+    else:
+        return jsonify(status='error', message='Section not found'), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
