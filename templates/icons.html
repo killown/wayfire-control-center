@@ -285,126 +285,155 @@
     <script src="static/js/icons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-            // Pass the enabled_plugins list to JavaScript
-            const enabledPlugins = {{ enabled_plugins|tojson|safe }};
+      // Pass the enabled_plugins list to JavaScript
+      const enabledPlugins = {{ enabled_plugins|tojson|safe }};
 
-            function showHelp(section) {
-              fetch(`/help/${section}`)
-                .then(response => response.text())
-                .then(html => {
-                  document.getElementById('helpContent').innerHTML = html;
-                  var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
-                  myModal.show();
-                });
-            }
-
-            function togglePlugin(plugin) {
-              fetch('/toggle_plugin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plugin: plugin })
-              })
-              .then(response => response.json())
-              .then(data => {
-                if (data.status === 'success') {
-                  location.reload(); // Reload the page to reflect changes
-                } else {
-                  alert('Error toggling plugin: ' + data.message);
-                }
-              });
-            }
-
-            function toggleCreateSectionForm() {
-              const form = document.getElementById('createSectionForm');
-              form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            }
-
-            function createNewSection(event) {
-              event.preventDefault();
-              const form = event.target;
-              const formData = new FormData(form);
-              fetch('/create_section', {
-                method: 'POST',
-                body: new URLSearchParams(formData),
-              })
-              .then(response => response.json())
-              .then(data => {
-                if (data.status === 'success') {
-                  location.reload(); // Reload the page to reflect changes
-                } else {
-                  alert('Error creating section: ' + data.message);
-                }
-              });
-            }
-
-            function updateValue(event) {
-              const input = event.target;
-              fetch('/update_option', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  section: input.dataset.section,
-                  option: input.dataset.option,
-                  value: input.value
-                })
-              });
-            }
-
-
-            document.querySelectorAll('.delete-button').forEach(button => {
-              button.addEventListener('click', function () {
-                const section = this.dataset.section;
-                const option = this.dataset.option;
-                if (confirm(`Are you sure you want to delete the option '${option}' from section '${section}'?`)) {
-                  fetch(`/delete_option/${section}/${option}`, {
-                    method: 'DELETE'
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.status === 'success') {
-                      location.reload(); // Reload the page to reflect changes
-                    } else {
-                      alert('Error deleting option: ' + data.message);
-                    }
-                  });
-                }
-              });
-            });
-
-            function addOption(option) {
-          fetch(`/add_option/${option}`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ /* your payload here */ })
-          })
+      function showHelp(section) {
+        fetch(`/help/${section}`)
           .then(response => response.json())
           .then(data => {
-              if (data.status === 'success') {
-                  alert('Option added successfully');
-              } else {
-                  alert('Error adding option: ' + data.message);
-              }
-          })
-          .catch(error => console.error('Error:', error));
+            if (data.status === "success") {
+              // Sanitize the fetched content to remove unnecessary HTML tags and styles
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(data.content, 'text/html');
+
+              // Extract relevant content
+              const relevantContent = doc.body.innerHTML;
+
+              // Remove unnecessary HTML tags
+              const cleanedContent = relevantContent.replace(/<meta[^>]*>/g, '')
+                                                    .replace(/<style[^>]*>.*?<\/style>/g, '')
+                                                    .replace(/<title[^>]*>.*?<\/title>/g, '');
+
+              // Set the sanitized content to the modal
+              document.getElementById("helpContent").innerHTML = cleanedContent;
+
+              // Show the modal
+              const myModal = new bootstrap.Modal(document.getElementById("helpModal"));
+              myModal.show();
+            } else {
+              console.error("Error fetching help content:", data.message);
+            }
+          });
       }
 
-            document.querySelectorAll('.card-header').forEach(header => {
-              header.addEventListener('click', function () {
-                const target = document.querySelector(this.dataset.target);
-                const icon = this.querySelector('.toggle-icon');
-                if (target.style.display === 'none' || target.style.display === '') {
-                  target.style.display = 'block';
-                  icon.classList.remove('fa-chevron-down');
-                  icon.classList.add('fa-chevron-up');
-                } else {
-                  target.style.display = 'none';
-                  icon.classList.remove('fa-chevron-up');
-                  icon.classList.add('fa-chevron-down');
-                }
-              });
+      function togglePlugin(plugin) {
+        fetch('/toggle_plugin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plugin: plugin })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+          } else {
+            alert('Error toggling plugin: ' + data.message);
+          }
+        });
+      }
+
+      function toggleCreateSectionForm() {
+        const form = document.getElementById('createSectionForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      }
+
+      function createNewSection(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const sectionName = formData.get('section_name');
+        const optionName = formData.get('option_name');
+        const optionValue = formData.get('option_value');
+
+        fetch('/create_section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section_name: sectionName,
+            option_name: optionName,
+            option_value: optionValue
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+          } else {
+            alert('Error creating section: ' + data.message);
+          }
+        });
+      }
+
+      function addNewOption(event, section) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const newOption = formData.get('newOption');
+        const newValue = formData.get('newValue');
+
+        fetch('/add_option', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section: section,
+            option: newOption,
+            value: newValue
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+          } else {
+            alert('Error adding option: ' + data.message);
+          }
+        });
+      }
+
+      function updateValue(event) {
+        const input = event.target;
+        const section = input.getAttribute('data-section');
+        const option = input.getAttribute('data-option');
+        const value = input.value;
+
+        fetch('/update_option', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            section: section,
+            option: option,
+            value: value
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status !== 'success') {
+            alert('Error updating option: ' + data.message);
+          }
+        });
+      }
+
+      document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', function () {
+          const section = this.getAttribute('data-section');
+          const option = this.getAttribute('data-option');
+
+          if (confirm(`Are you sure you want to delete the option "${option}" from section "${section}"?`)) {
+            fetch('/delete_option', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ section: section, option: option })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                location.reload(); // Reload the page to reflect changes
+              } else {
+                alert('Error deleting option: ' + data.message);
+              }
             });
+          }
+        });
+      });
     </script>
   </body>
 </html>
