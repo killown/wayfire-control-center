@@ -26,54 +26,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.querySelectorAll('.delete-button').forEach(button => {
-        button.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default form submission
-            const form = this.closest('form');
-            deleteOption(form);
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this option?')) {
+                deleteOption(this);
+            }
         });
     });
 });
 
-// Function to handle option deletion
-function deleteOption(form) {
-    const sectionInput = form.querySelector('input[name="section"]');
-    const optionInput = form.querySelector('input[name="option"]');
+// Handle deleting an option
+function deleteOption(button) {
+    const form = button.closest('form');
+    const section = form.querySelector('input[name="section"]').value;
+    const option = form.querySelector('input[name="option"]').value;
     
-    if (!sectionInput || !optionInput) {
-        console.error('Required input fields not found in the form.');
-        return;
-    }
-    
-    const section = sectionInput.value;
-    const option = optionInput.value;
-
-    if (confirm('Are you sure you want to delete this option?')) {
-        fetch('/delete_option', {  // Ensure the endpoint matches your Flask route
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                section: section,
-                option: option
-            })
+    fetch('/delete_option', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            section: section,
+            option: option
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                location.reload(); // Reload the page to reflect changes
-            } else {
-                alert('Failed to delete option: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while deleting the option.');
-        });
-    }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+        } else {
+            alert('Failed to delete option: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the option.');
+    });
 }
 
-// Function to handle adding new options
+// Handle adding new options
 function addNewOption(event, section) {
     event.preventDefault();
     
@@ -81,7 +72,7 @@ function addNewOption(event, section) {
     const newOptionName = form.querySelector('input[name="newOption"]').value;
     const newOptionValue = form.querySelector('input[name="newValue"]').value;
     
-    fetch('/add_option', {  // Ensure the endpoint matches your Flask route
+    fetch('/add_option', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -104,5 +95,45 @@ function addNewOption(event, section) {
         console.error('Error:', error);
         alert('An error occurred while adding the new option.');
     });
+}
+
+// Handle creating new section
+function createNewSection(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const sectionName = form.querySelector('input[name="section_name"]').value;
+    const optionName = form.querySelector('input[name="option_name"]').value;
+    const optionValue = form.querySelector('input[name="option_value"]').value;
+    
+    fetch('/create_section', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            section_name: sectionName,
+            option_name: optionName,
+            option_value: optionValue
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload(); // Reload the page to reflect changes
+        } else {
+            alert('Failed to create section: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the section.');
+    });
+}
+
+// Toggle visibility of create new section form
+function toggleCreateSectionForm() {
+    const form = document.getElementById('createSectionForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
 }
 
