@@ -38,7 +38,7 @@
         right: 0;
         bottom: 0;
         background-color: #ccc;
-        transition: .4s;
+        transition: 0.4s;
         border-radius: 20px;
       }
 
@@ -51,11 +51,11 @@
         left: 4px;
         bottom: 4px;
         background-color: white;
-        transition: .4s;
+        transition: 0.4s;
       }
 
       input:checked + .slider {
-        background-color: #2196F3;
+        background-color: #2196f3;
       }
 
       input:checked + .slider:before {
@@ -111,17 +111,35 @@
   <body>
     <!-- Create new section form -->
     <div class="create-section-container text-center mt-4">
-      <button class="btn btn-primary" onclick="toggleCreateSectionForm()">Create New Section</button>
-      <div id="createSectionForm" class="mt-3" style="display: none;">
+      <button class="btn btn-primary" onclick="toggleCreateSectionForm()">
+        Create New Section
+      </button>
+      <div id="createSectionForm" class="mt-3" style="display: none">
         <form onsubmit="createNewSection(event)">
           <div class="form-group">
-            <input type="text" name="section_name" class="form-control" placeholder="Section Name" required />
+            <input
+              type="text"
+              name="section_name"
+              class="form-control"
+              placeholder="Section Name"
+              required
+            />
           </div>
           <div class="form-group">
-            <input type="text" name="option_name" class="form-control" placeholder="Option Name (Optional)" />
+            <input
+              type="text"
+              name="option_name"
+              class="form-control"
+              placeholder="Option Name (Optional)"
+            />
           </div>
           <div class="form-group">
-            <input type="text" name="option_value" class="form-control" placeholder="Option Value (Optional)" />
+            <input
+              type="text"
+              name="option_value"
+              class="form-control"
+              placeholder="Option Value (Optional)"
+            />
           </div>
           <button class="btn btn-success" type="submit">Create Section</button>
         </form>
@@ -131,18 +149,39 @@
     <!-- Sections container -->
     <div class="d-flex flex-wrap" id="sectionsContainer">
       {% for section in config.sections() %}
-      <div class="section-card {% if section == 'core' %}non-plugin-section{% else %}plugin-section{% endif %}" data-section="{{ section }}">
+      <div
+        class="section-card {% if section == 'core' %}non-plugin-section{% else %}plugin-section{% endif %}"
+        data-section="{{ section }}"
+      >
         <div class="card">
           <div class="card-header" data-target="#collapse{{ loop.index }}">
-            <i class="fas card-icon {% include 'icons-class.html' %}" data-section="{{ section }}"></i>
+            <i
+              class="fas card-icon {% include 'icons-class.html' %}"
+              data-section="{{ section }}"
+            ></i>
             <h5 class="mb-0">{{ section }}</h5>
             <i class="fas fa-chevron-down toggle-icon"></i>
-            <button class="btn btn-info btn-sm float-right" onclick="showHelp('{{ section }}')">
+            <button
+              class="btn btn-info btn-sm float-right"
+              onclick="showHelp('{{ section }}')"
+            >
               <i class="fas fa-question-circle help-icon"></i>
             </button>
             {% if section in enabled_plugins %}
             <label class="switch">
-              <input type="checkbox" data-plugin="{{ section }}" onchange="togglePlugin('{{ section }}')" {% if section in enabled_plugins %}checked{% endif %}>
+              <input
+                type="checkbox"
+                data-plugin="{{ section }}"
+                onchange="togglePlugin('{{ section }}')"
+                {%
+                if
+                section
+                in
+                enabled_plugins
+                %}checked{%
+                endif
+                %}
+              />
               <span class="slider"></span>
             </label>
             {% endif %}
@@ -155,8 +194,21 @@
                 <form class="form-inline" onsubmit="event.stopPropagation();">
                   <input type="hidden" name="section" value="{{ section }}" />
                   <input type="hidden" name="option" value="{{ option }}" />
-                  <input type="text" name="value" class="form-control" value="{{ value }}" data-section="{{ section }}" data-option="{{ option }}" oninput="updateValue(event)" />
-                  <button class="btn btn-danger delete-button" type="button" data-section="{{ section }}" data-option="{{ option }}">
+                  <input
+                    type="text"
+                    name="value"
+                    class="form-control"
+                    value="{{ value }}"
+                    data-section="{{ section }}"
+                    data-option="{{ option }}"
+                    oninput="updateValue(event)"
+                  />
+                  <button
+                    class="btn btn-danger delete-button"
+                    type="button"
+                    data-section="{{ section }}"
+                    data-option="{{ option }}"
+                  >
                     <i class="fas fa-trash"></i>
                   </button>
                 </form>
@@ -167,12 +219,26 @@
             <div class="add-option-form">
               <form onsubmit="addNewOption(event, '{{ section }}')">
                 <div class="form-group">
-                  <input type="text" name="newOption" class="form-control" placeholder="New option name" required />
+                  <input
+                    type="text"
+                    name="newOption"
+                    class="form-control"
+                    placeholder="New option name"
+                    required
+                  />
                 </div>
                 <div class="form-group">
-                  <input type="text" name="newValue" class="form-control" placeholder="New option value" required />
+                  <input
+                    type="text"
+                    name="newValue"
+                    class="form-control"
+                    placeholder="New option value"
+                    required
+                  />
                 </div>
-                <button class="btn btn-success" type="submit">Add Option</button>
+                <button class="btn btn-success" type="submit">
+                  Add Option
+                </button>
               </form>
             </div>
           </div>
@@ -182,18 +248,35 @@
     </div>
 
     <!-- Help Modal -->
-    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="helpModal"
+      tabindex="-1"
+      aria-labelledby="helpModalLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="helpModalLabel">Help</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="modal-body" id="helpContent">
             <!-- Help content will be loaded here -->
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -202,125 +285,126 @@
     <script src="static/js/icons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Pass the enabled_plugins list to JavaScript
-      const enabledPlugins = {{ enabled_plugins|tojson|safe }};
+            // Pass the enabled_plugins list to JavaScript
+            const enabledPlugins = {{ enabled_plugins|tojson|safe }};
 
-      function showHelp(section) {
-        fetch(`/help/${section}`)
-          .then(response => response.text())
-          .then(html => {
-            document.getElementById('helpContent').innerHTML = html;
-            var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
-            myModal.show();
-          });
-      }
+            function showHelp(section) {
+              fetch(`/help/${section}`)
+                .then(response => response.text())
+                .then(html => {
+                  document.getElementById('helpContent').innerHTML = html;
+                  var myModal = new bootstrap.Modal(document.getElementById('helpModal'));
+                  myModal.show();
+                });
+            }
 
-      function togglePlugin(plugin) {
-        fetch('/toggle_plugin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plugin: plugin })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error toggling plugin: ' + data.message);
-          }
-        });
-      }
+            function togglePlugin(plugin) {
+              fetch('/toggle_plugin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plugin: plugin })
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.status === 'success') {
+                  location.reload(); // Reload the page to reflect changes
+                } else {
+                  alert('Error toggling plugin: ' + data.message);
+                }
+              });
+            }
 
-      function toggleCreateSectionForm() {
-        const form = document.getElementById('createSectionForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      }
+            function toggleCreateSectionForm() {
+              const form = document.getElementById('createSectionForm');
+              form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            }
 
-      function createNewSection(event) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        fetch('/create_section', {
-          method: 'POST',
-          body: new URLSearchParams(formData),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error creating section: ' + data.message);
-          }
-        });
-      }
+            function createNewSection(event) {
+              event.preventDefault();
+              const form = event.target;
+              const formData = new FormData(form);
+              fetch('/create_section', {
+                method: 'POST',
+                body: new URLSearchParams(formData),
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.status === 'success') {
+                  location.reload(); // Reload the page to reflect changes
+                } else {
+                  alert('Error creating section: ' + data.message);
+                }
+              });
+            }
 
-      function updateValue(event) {
-        const input = event.target;
-        fetch('/update_option', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            section: input.dataset.section,
-            option: input.dataset.option,
-            value: input.value
-          })
-        });
-      }
+            function updateValue(event) {
+              const input = event.target;
+              fetch('/update_option', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  section: input.dataset.section,
+                  option: input.dataset.option,
+                  value: input.value
+                })
+              });
+            }
 
-      function addNewOption(event, section) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        fetch(`/add_option/${section}`, {
-          method: 'POST',
-          body: new URLSearchParams(formData),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error adding option: ' + data.message);
-          }
-        });
-      }
 
-      document.querySelectorAll('.delete-button').forEach(button => {
-        button.addEventListener('click', function () {
-          const section = this.dataset.section;
-          const option = this.dataset.option;
-          if (confirm(`Are you sure you want to delete the option '${option}' from section '${section}'?`)) {
-            fetch(`/delete_option/${section}/${option}`, {
-              method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status === 'success') {
-                location.reload(); // Reload the page to reflect changes
-              } else {
-                alert('Error deleting option: ' + data.message);
-              }
+            document.querySelectorAll('.delete-button').forEach(button => {
+              button.addEventListener('click', function () {
+                const section = this.dataset.section;
+                const option = this.dataset.option;
+                if (confirm(`Are you sure you want to delete the option '${option}' from section '${section}'?`)) {
+                  fetch(`/delete_option/${section}/${option}`, {
+                    method: 'DELETE'
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.status === 'success') {
+                      location.reload(); // Reload the page to reflect changes
+                    } else {
+                      alert('Error deleting option: ' + data.message);
+                    }
+                  });
+                }
+              });
             });
-          }
-        });
-      });
 
-      document.querySelectorAll('.card-header').forEach(header => {
-        header.addEventListener('click', function () {
-          const target = document.querySelector(this.dataset.target);
-          const icon = this.querySelector('.toggle-icon');
-          if (target.style.display === 'none' || target.style.display === '') {
-            target.style.display = 'block';
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-          } else {
-            target.style.display = 'none';
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-          }
-        });
-      });
+            function addOption(option) {
+          fetch(`/add_option/${option}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ /* your payload here */ })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.status === 'success') {
+                  alert('Option added successfully');
+              } else {
+                  alert('Error adding option: ' + data.message);
+              }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+            document.querySelectorAll('.card-header').forEach(header => {
+              header.addEventListener('click', function () {
+                const target = document.querySelector(this.dataset.target);
+                const icon = this.querySelector('.toggle-icon');
+                if (target.style.display === 'none' || target.style.display === '') {
+                  target.style.display = 'block';
+                  icon.classList.remove('fa-chevron-down');
+                  icon.classList.add('fa-chevron-up');
+                } else {
+                  target.style.display = 'none';
+                  icon.classList.remove('fa-chevron-up');
+                  icon.classList.add('fa-chevron-down');
+                }
+              });
+            });
     </script>
   </body>
 </html>
-
