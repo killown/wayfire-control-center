@@ -184,7 +184,7 @@
                 <strong>{{ option }}</strong>
                 <form class="form-inline" onsubmit="event.stopPropagation();">
                   <input type="hidden" name="section" value="{{ section }}" />
-                  <input type="hidden" name="option" value="{{ option }}" />
+                  <input type="hidden" name="options" value="{{ option }}" />
                   <input
                     type="text"
                     name="value"
@@ -199,6 +199,7 @@
                     type="button"
                     data-section="{{ section }}"
                     data-option="{{ option }}"
+                    onclick="deleteOption(this)"
                   >
                     <i class="fas fa-trash"></i>
                   </button>
@@ -208,17 +209,23 @@
             </div>
             <!-- Form to add a new option -->
             <div class="add-option-form">
-              <form onsubmit="addNewOption(event, '{{ section }}')">
+              <form
+                id="addOptionForm"
+                onsubmit="addNewOption(event, '{{ section }}')"
+              >
                 <div class="form-group">
-                  <form method="post" action="/add_option" class="add-options-form">
-                    <textarea name="options" rows="10" cols="40" placeholder="Enter options in the format option=value, one per line."></textarea>
-                    <input type="hidden" name="section" value="{{ section }}"> <!-- Replace with actual section -->
-                    <button type="submit" class="submit-button">Add Options</button>
-                  </form>
+                  <textarea
+                    name="options"
+                    rows="10"
+                    cols="40"
+                    placeholder="Enter options in the format option=value, one per line."
+                    required
+                  ></textarea>
+                  <input type="hidden" name="section" value="{{ section }}" />
+                  <button type="submit" class="btn btn-success">
+                    Add Options
+                  </button>
                 </div>
-                <button class="btn btn-success" type="submit">
-                  Add Option
-                </button>
               </form>
             </div>
           </div>
@@ -227,7 +234,11 @@
       {% endfor %}
     </div>
     <h4>Backup File</h4>
-    <p><a href="file://{{backup_ini}}"  target="_blank">Download wayfire-config-11-06-2024.ini</a></p>
+    <p>
+      <a href="file://{{backup_ini}}" target="_blank"
+        >Download wayfire-config-11-06-2024.ini</a
+      >
+    </p>
     <!-- Help Modal -->
     <div
       class="modal fade"
@@ -306,9 +317,9 @@
       function createNewSection(event) {
         event.preventDefault();
         const form = event.target;
-        const sectionName = form.querySelector('[name="section_name"]').value;
-        const optionName = form.querySelector('[name="option_name"]').value;
-        const optionValue = form.querySelector('[name="option_value"]').value;
+        const sectionName = form.section_name.value.trim();
+        const optionName = form.option_name.value.trim();
+        const optionValue = form.option_value.value.trim();
 
         fetch('/create_section', {
           method: 'POST',
@@ -322,7 +333,7 @@
         .then(response => response.json())
         .then(data => {
           if (data.status === 'success') {
-            location.reload(); // Reload the page to include the new section
+            location.reload(); // Reload the page to show the new section
           } else {
             alert('Error creating section: ' + data.message);
           }
@@ -331,63 +342,77 @@
 
       function addNewOption(event, section) {
         event.preventDefault();
-        const form = event.target;
-        const optionsText = form.querySelector('[name="options"]').value;
+        const textarea = event.target.elements.options;
+        const options = textarea.value.trim().split('\n').map(line => {
+          const [option, value] = line.split('=').map(part => part.trim());
+          return { option, value };
+        });
 
-        fetch('/add_option', {
+        fetch('/add_options', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            section: section,
-            options: optionsText
-          })
+          body: JSON.stringify({ section: section, options: options })
         })
         .then(response => response.json())
         .then(data => {
           if (data.status === 'success') {
-            location.reload(); // Reload the page to include the new options
+            location.reload(); // Reload the page to show the new options
           } else {
             alert('Error adding options: ' + data.message);
           }
         });
       }
 
-      // Debounce function
-      function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-      }
+      function deleteOption(button) {
+        const section = button.dataset.section;
+        const option = button.dataset.option;
 
-      // Debounced update value function
-      const debouncedUpdateValue = debounce(updateValue, 500);
-
-      function updateValue(event) {
-        const input = event.target;
-        const section = input.getAttribute('data-section');
-        const option = input.getAttribute('data-option');
-        const value = input.value;
-
-        fetch('/update_option', {
+        fetch('/delete_option', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ section: section, option: option, value: value })
+          body: JSON.stringify({ section: section, option: option })
         })
         .then(response => response.json())
         .then(data => {
           if (data.status === 'success') {
-            console.log('Value updated successfully');
+            location.reload(); // Reload the page to remove the deleted option
           } else {
-            console.error('Error updating value:', data.message);
+            alert('Error deleting option: ' + data.message);
           }
-        })
-        .catch(error => {
-          console.error('Network error:', error);
         });
       }
+
+      function debouncedUpdateValue(event) {
+        clearTimeout(window.debounceTimeout);
+        window.debounceTimeout = setTimeout(() => {
+          const input = event.target;
+          const section = input.dataset.section;
+          const option = input.dataset.option;
+          const value = input.value.trim();
+
+          fetch('/update_option', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ section: section, option: option, value: value })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status !== 'success') {
+              alert('Error updating option: ' + data.message);
+            }
+          });
+        }, 300); // Debounce delay
+      }
+
+      // Add the event listener to the form to capture enter key presses
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('keypress', event => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            form.querySelector('button[type="submit"]').click();
+          }
+        });
+      });
     </script>
   </body>
 </html>
-

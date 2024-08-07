@@ -3,14 +3,14 @@ import configparser
 import os
 import logging
 import xml.etree.ElementTree as ET
-import json
 import shutil
 from datetime import datetime
 import fcntl  # For file locking
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 
-CONFIG_FILE = os.path.expanduser('~/.config/wayfire.ini')
+CONFIG_FILE = os.getenv('WAYFIRE_CONFIG_FILE')
 METADATA_PATH = '/usr/share/wayfire/metadata'
 metadata_plugins = None
 
@@ -103,6 +103,92 @@ def convert_element_to_html(element):
     html += "</body>\n</html>"
     
     return html
+
+
+@app.route('/add_options', methods=['POST'])
+def add_options():
+    """Add multiple options to the configuration file."""
+    data = request.get_json()
+    section = data.get('section')
+    options = data.get('options')
+
+    if not section or not options:
+        return jsonify(status='error', message='Missing parameters'), 400
+
+    config = load_config()
+
+    if section not in config.sections():
+        config.add_section(section)
+
+    for option in options:
+        opt = option.get('option')
+        val = option.get('value')
+        if opt and val:
+            config.set(section, opt, val)
+    
+    try:
+        with open(CONFIG_FILE, 'w') as configfile:
+            config.write(configfile)
+        return jsonify(status='success')
+    except Exception as e:
+        logging.error(f'Error saving configuration: {e}')
+        return jsonify(status='error', message=str(e))
+
+@app.route('/delete_option', methods=['POST'])
+def delete_option():
+    """Delete an option from the configuration file."""
+    try:
+        data = request.get_json()  # If using JSON data
+        section = data.get('section')
+        option = data.get('option')
+
+        if not section or not option:
+            return jsonify(status='error', message='Missing parameters'), 400
+
+        config = load_config()
+
+        if section not in config.sections():
+            return jsonify(status='error', message='Section not found'), 404
+
+        if not config.has_option(section, option):
+            return jsonify(status='error', message='Option not found'), 404
+
+        config.remove_option(section, option)
+
+        try:
+            with open(CONFIG_FILE, 'w') as configfile:
+                config.write(configfile)
+            return jsonify(status='success')
+        except Exception as e:
+            logging.error(f'Error saving configuration: {e}')
+            return jsonify(status='error', message=str(e))
+
+    except Exception as e:
+        logging.error(f'Error processing request: {e}')
+        return jsonify(status='error', message='Internal server error'), 500
+
+@app.route('/toggle_plugin', methods=['POST'])
+def toggle_plugin():
+    """Toggle the status of a plugin."""
+    try:
+        data = request.get_json()  # Expecting JSON data
+        plugin_id = data.get('plugin_id')
+        status = data.get('status')
+
+        if not plugin_id or status is None:
+            return jsonify(status='error', message='Missing parameters'), 400
+
+        # Here you would add logic to toggle the plugin status
+        # For example, update a configuration file or database
+        logging.info(f'Toggling plugin {plugin_id} to status {status}')
+
+        # Simulate success
+        return jsonify(status='success')
+
+    except Exception as e:
+        logging.error(f'Error processing request: {e}')
+        return jsonify(status='error', message='Internal server error'), 500
+
 
 @app.route('/update_option', methods=['POST'])
 def update_option():
