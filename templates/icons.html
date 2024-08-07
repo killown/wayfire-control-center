@@ -318,7 +318,6 @@
                   if (status === 'disabled') {
                       // Hide the section if the plugin is disabled
                       if (sectionCard) {
-                          sectionCard.style.display = 'none';
                       }
                   } else {
                       // Show the section if the plugin is enabled
@@ -338,6 +337,7 @@
               checkbox.checked = !isChecked;
           });
       }
+
 
 
       function toggleSection(sectionId, status) {

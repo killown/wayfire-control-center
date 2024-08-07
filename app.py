@@ -6,7 +6,8 @@ import xml.etree.ElementTree as ET
 import shutil
 from datetime import datetime
 import fcntl  # For file locking
-
+from wayfire import WayfireSocket 
+sock = WayfireSocket()
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
@@ -167,6 +168,15 @@ def delete_option():
         logging.error(f'Error processing request: {e}')
         return jsonify(status='error', message='Internal server error'), 500
 
+def disable_plugin(plugin_name):
+    plugins = sock.get_option_value("core/plugins")["value"]
+    p = " ".join([i for i in plugins.split() if plugin_name not in i])
+    sock.set_option_values({"core/plugins": p})
+
+def enable_plugin(plugin_name):
+    plugins = sock.get_option_value("core/plugins")["value"]
+    p = plugins + " " +  plugin_name
+    sock.set_option_values({"core/plugins": p})
 
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():
@@ -184,9 +194,11 @@ def toggle_plugin():
         if status == 'enabled':
             if plugin_name not in plugins_list:
                 plugins_list.append(plugin_name)
+                enable_plugin(plugin_name)
         if status == 'disabled':
             if plugin_name in plugins_list:
                 plugins_list.remove(plugin_name)
+                disable_plugin(plugin_name)
 
         config.set('core', 'plugins', ' '.join(plugins_list))
 
