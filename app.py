@@ -4,14 +4,15 @@ import os
 import logging
 import xml.etree.ElementTree as ET
 import json
-import shutil 
-from datetime import datetime 
+import shutil
+from datetime import datetime
+import fcntl  # For file locking
 
 app = Flask(__name__)
 
 CONFIG_FILE = os.path.expanduser('~/.config/wayfire.ini')
 METADATA_PATH = '/usr/share/wayfire/metadata'
-metadata_plugins = None 
+metadata_plugins = None
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -86,7 +87,7 @@ def convert_element_to_html(element):
         plugin_name = plugin.get("name")
 
         # Add the long description at the top with h2 tag
-        html += f'<a href="https://github.com/WayfireWM/wayfire/wiki/Configuration#' + plugin_name  + '" class="more-help-link" target="_blank">More Help In Wayfire Wiki</a>\n<br></br>'
+        html += f'<a href="https://github.com/WayfireWM/wayfire/wiki/Configuration#{plugin_name}" class="more-help-link" target="_blank">More Help In Wayfire Wiki</a>\n<br></br>'
         html += f"<h2>{plugin_long_desc}</h2>\n"
 
         # Iterate through all options to extract relevant information
@@ -121,11 +122,13 @@ def update_option():
 
     config.set(section, option, value)
 
-    with open(CONFIG_FILE, 'w') as configfile:
+    with open(CONFIG_FILE, 'r+') as configfile:
+        fcntl.flock(configfile, fcntl.LOCK_EX)
+        configfile.truncate(0)
         config.write(configfile)
+        fcntl.flock(configfile, fcntl.LOCK_UN)
 
     return jsonify({'status': 'success'}), 200
-
 
 def get_metadata():
     """Load metadata from XML files and return a list of plugins."""
@@ -188,7 +191,6 @@ def update_wayfire_ini():
     except Exception as e:
         logging.error(f'Error saving configuration: {e}')
 
-
 @app.context_processor
 def inject_helpers():
     """Inject helper functions and variables into the template context."""
@@ -221,7 +223,6 @@ def inject_helpers():
         'metadata': metadata
     }
 
-
 @app.route('/')
 def index():
     # make it backup wayfire.ini during server startup
@@ -232,105 +233,10 @@ def index():
     enabled_plugins = config.get('core', 'plugins', fallback='').split()
     if enabled_plugins is None:
         enabled_plugins = []
-    if metadata is None:
-        metadata = {}
-    
-    return render_template('index.html', config=config, metadata=metadata, backup_ini = backup, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
+    if metadata_plugins is None:
+        metadata_plugins = []
 
-@app.route('/toggle_plugin', methods=['POST'])
-def toggle_plugin():
-    """Toggle the plugin in the configuration file."""
-    data = request.get_json()
-    plugin = data.get('plugin')
-
-    if not plugin:
-        return jsonify(status='error', message='No plugin provided'), 400
-
-    config = load_config()
-    plugins_list = config.get('core', 'plugins', fallback='').split()
-
-    # Get the list of valid plugins from metadata
-    valid_plugins = [os.path.splitext(f)[0] for f in os.listdir(METADATA_PATH) if f.endswith('.xml')]
-
-    if plugin not in valid_plugins:
-        return jsonify(status='error', message='Plugin not found in metadata'), 400
-
-    if plugin in plugins_list:
-        plugins_list.remove(plugin)
-    else:
-        plugins_list.append(plugin)
-
-    config.set('core', 'plugins', ' '.join(plugins_list))
-
-    try:
-        with open(CONFIG_FILE, 'w') as configfile:
-            config.write(configfile)
-        logging.info(f'Toggled plugin: {plugin}. New plugins list: {plugins_list}')
-        return jsonify(status='success')
-    except Exception as e:
-        logging.error(f'Error saving configuration: {e}')
-        return jsonify(status='error', message=str(e))
-
-@app.route('/add_option', methods=['POST'])
-def add_option():
-    """Add multiple options to the configuration file."""
-    section = request.form.get('section')
-    options_text = request.form.get('options')
-    if not section or not options_text:
-        return jsonify(status='error', message='Missing parameters'), 400
-    config = load_config()
-
-    if section not in config.sections():
-        config.add_section(section)
-
-    lines = options_text.strip().split('\n')
-    
-    for line in lines:
-        if '=' in line:
-            option, value = line.split('=', 1)
-            option = option.strip()
-            value = value.strip()
-            config.set(section, option, value)
-    
-    try:
-        with open(CONFIG_FILE, 'w') as configfile:
-            config.write(configfile)
-        return jsonify(status='success')
-    except Exception as e:
-        logging.error(f'Error saving configuration: {e}')
-        return jsonify(status='error', message=str(e))
-
-
-@app.route('/icons')
-def icons():
-    config = load_config()
-    print(metadata_plugins)
-    enabled_plugins = config.get('core', 'plugins', fallback='').split()
-    return render_template('icons.html', config=config, metadata_plugins=metadata_plugins, enabled_plugins=enabled_plugins)
-
-@app.route('/delete_option', methods=['POST'])
-def delete_option():
-    """Delete an option from the configuration file."""
-    section = request.form['section']
-    option = request.form['option']
-    
-    config = load_config()
-    
-    if section in config:
-        if option in config[section]:
-            del config[section][option]
-            # Save changes
-            try:
-                with open(CONFIG_FILE, 'w') as configfile:
-                    config.write(configfile)
-                return jsonify(status='success')
-            except Exception as e:
-                logging.error(f'Error saving configuration: {e}')
-                return jsonify(status='error', message=str(e))
-        else:
-            return jsonify(status='error', message='Option not found'), 400
-    else:
-        return jsonify(status='error', message='Section not found'), 400
+    return render_template('index.html', config=config, metadata=metadata, enabled_plugins=enabled_plugins, metadata_plugins=metadata_plugins)
 
 if __name__ == '__main__':
     app.run(debug=True)
