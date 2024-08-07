@@ -167,27 +167,45 @@ def delete_option():
         logging.error(f'Error processing request: {e}')
         return jsonify(status='error', message='Internal server error'), 500
 
+
 @app.route('/toggle_plugin', methods=['POST'])
 def toggle_plugin():
     """Toggle the status of a plugin."""
     try:
         data = request.get_json()  # Expecting JSON data
-        plugin_id = data.get('plugin_id')
+        plugin_name = data.get('plugin_name')
         status = data.get('status')
+        if not plugin_name or status not in ['enabled', 'disabled']:
+            return jsonify(status='error', message='Missing or invalid parameters'), 400
 
-        if not plugin_id or status is None:
-            return jsonify(status='error', message='Missing parameters'), 400
+        config = load_config()
+        plugins_list = config.get('core', 'plugins', fallback='').split()
 
-        # Here you would add logic to toggle the plugin status
-        # For example, update a configuration file or database
-        logging.info(f'Toggling plugin {plugin_id} to status {status}')
+        if status == 'enabled':
+            if plugin_name not in plugins_list:
+                plugins_list.append(plugin_name)
+        if status == 'disabled':
+            if plugin_name in plugins_list:
+                plugins_list.remove(plugin_name)
 
-        # Simulate success
-        return jsonify(status='success')
+        config.set('core', 'plugins', ' '.join(plugins_list))
+
+        try:
+            with open(CONFIG_FILE, 'w') as configfile:
+                config.write(configfile)
+
+            logging.info(f'Successfully toggled plugin {plugin_name} to status {status}')
+            return jsonify(status='success')
+        except Exception as e:
+            logging.error(f'Error saving configuration: {e}')
+            return jsonify(status='error', message=str(e))
 
     except Exception as e:
         logging.error(f'Error processing request: {e}')
         return jsonify(status='error', message='Internal server error'), 500
+
+
+
 
 
 @app.route('/update_option', methods=['POST'])

@@ -293,21 +293,77 @@
           });
       }
 
-      function togglePlugin(plugin) {
-        fetch('/toggle_plugin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plugin: plugin })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            location.reload(); // Reload the page to reflect changes
-          } else {
-            alert('Error toggling plugin: ' + data.message);
-          }
-        });
+      function togglePlugin(pluginName) {
+          const checkbox = document.querySelector(`input[data-plugin="${pluginName}"]`);
+          const isChecked = checkbox.checked;
+          const status = isChecked ? 'enabled' : 'disabled';
+
+          fetch('/toggle_plugin', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  plugin_name: pluginName,
+                  status: status
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.status === 'success') {
+                  console.log(`Plugin ${pluginName} successfully ${status}`);
+
+                  // Update the UI based on the new status
+                  const sectionCard = document.querySelector(`.section-card[data-section="${pluginName}"]`);
+                  if (status === 'disabled') {
+                      // Hide the section if the plugin is disabled
+                      if (sectionCard) {
+                          sectionCard.style.display = 'none';
+                      }
+                  } else {
+                      // Show the section if the plugin is enabled
+                      if (sectionCard) {
+                          sectionCard.style.display = 'block';
+                      }
+                  }
+              } else {
+                  console.error(`Failed to toggle plugin ${pluginName}: ${data.message}`);
+                  // Revert the checkbox state if there's an error
+                  checkbox.checked = !isChecked;
+              }
+          })
+          .catch(error => {
+              console.error('Error toggling plugin:', error);
+              // Revert the checkbox state if there's an error
+              checkbox.checked = !isChecked;
+          });
       }
+
+
+      function toggleSection(sectionId, status) {
+            fetch('/toggle_plugin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    section: sectionId,
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`Section ${sectionId} toggled to ${status}`);
+                    // Optionally update the UI here
+                } else {
+                    alert('Error toggling section: ' + data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
 
       function toggleCreateSectionForm() {
         const form = document.getElementById('createSectionForm');
